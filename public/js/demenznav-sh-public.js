@@ -28,5 +28,20 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
-
+    function mapHighlight(key){
+        document.getElementById('shmap').classList.add(key);
+        document.getElementById('legende_'+key).classList.add('highlight');
+    }
+    function mapReset(key){
+        document.getElementById('shmap').classList.remove(key);
+        document.getElementById('legende_'+key).classList.remove('highlight');
+    }
 })( jQuery );
+function mapHighlight(key){
+    document.getElementById('shmap').classList.add(key);
+    document.getElementById('legende_'+key).classList.add('highlight');
+}
+function mapReset(key){
+    document.getElementById('shmap').classList.remove(key);
+    document.getElementById('legende_'+key).classList.remove('highlight');
+}

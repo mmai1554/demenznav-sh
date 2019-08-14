@@ -100,4 +100,14 @@ class Demenznav_Sh_Public {
 
 	}
 
+	public function register_shortcodes() {
+
+	}
+
+	protected function getHTMLKarte() {
+
+	}
+
+
+
 }
