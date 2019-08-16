@@ -20,6 +20,8 @@
  * @subpackage Demenznav_Sh/public
  * @author     ReBoom GmbH <m.mai@reboom.de>
  */
+require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
+
 class Demenznav_Sh_Public {
 
 	/**
@@ -61,18 +63,6 @@ class Demenznav_Sh_Public {
 	 */
 	public function enqueue_styles() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Demenznav_Sh_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Demenznav_Sh_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/demenznav-sh-public.css', array(), $this->version, 'all' );
 
 	}
@@ -84,30 +74,34 @@ class Demenznav_Sh_Public {
 	 */
 	public function enqueue_scripts() {
 
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Demenznav_Sh_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Demenznav_Sh_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, false );
 
 	}
 
-	public function register_shortcodes() {
-
+	function register_presenter( ) {
+		add_action( 'format_website', array ( $this, 'format_website' ) );
 	}
 
-	protected function getHTMLKarte() {
+	/**
+	 * returns a formatted website link
+	 * use only on website fields
+	 * true: echos the formatted value
+	 * false: returns the formatted value as string
+	 *
+	 * @param $fieldname
+	 *
+	 * @return string
+	 */
+	function format_website( $fieldname ) {
+		$url = get_field( $fieldname, false, false );
+		if ( ! $url ) {
+			echo('');
+		}
 
+		echo sprintf( '<a href="%s" target="_blank" title="Website %s in neuem Fenster öffnen...">%s</a>',
+			$url, $url, $url
+		);
 	}
-
 
 
 }
