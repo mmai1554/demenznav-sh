@@ -157,6 +157,7 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
+		add_action('acf/init', array($this, 'my_acf_init'));
 
 	}
 
@@ -174,6 +175,12 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_presenter' );
+		add_action('acf/init', array($this, 'my_acf_init'));
+
+	}
+
+	public function my_acf_init() {
+		acf_update_setting('google_api_key', 'AIzaSyC-pPL-TRu4_WWEQz8qdH3uM6R-i_-XPZg');
 	}
 
 	/**
