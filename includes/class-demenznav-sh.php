@@ -179,8 +179,9 @@ class Demenznav_Sh {
 
 	}
 
+	// see wp-config for API Key
 	public function my_acf_init() {
-		acf_update_setting('google_api_key', 'AIzaSyC-pPL-TRu4_WWEQz8qdH3uM6R-i_-XPZg');
+		acf_update_setting('google_api_key', MI_GOOGLE_MAPS_API_KEY);
 	}
 
 	/**
