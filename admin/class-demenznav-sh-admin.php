@@ -147,7 +147,7 @@ class Demenznav_Sh_Admin {
 				'description'         => __( 'Einrichtungen', $text_domain ),
 				'labels'              => $labels,
 				'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', ),
-				'taxonomies'          => array( $key_category1_for_cpt, $key_category2_for_cpt ),
+				'taxonomies'          => array( $key_category1_for_cpt, $key_category2_for_cpt , 'post_tag'),
 				'hierarchical'        => false,
 				'public'              => true,
 				'show_ui'             => true,
@@ -200,7 +200,7 @@ class Demenznav_Sh_Admin {
 			);
 			register_taxonomy( $key_category1_for_cpt, array( $key_cpt ), $args );
 
-			// Arbeitskreise
+			// Landkreise
 			$text_domain = $key_category2_for_cpt;
 			$labels = array(
 				'name'                       => _x( 'Kreise', 'Taxonomy General Name', $text_domain ),
@@ -234,6 +234,7 @@ class Demenznav_Sh_Admin {
 				'show_tagcloud'              => true,
 			);
 			register_taxonomy( $key_category2_for_cpt, array( $key_cpt ), $args );
+
 
 		}
 
