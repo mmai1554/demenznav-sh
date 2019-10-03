@@ -114,7 +114,7 @@ class Demenznav_Sh_Public {
 			$a[] = '<i class="ua-icon ' . $icon . '"></i>';
 			$a[] = '</span>';
 			$a[] = '<div class="fl-icon-text">';
-			$a[] = $label  . $content;
+			$a[] = $label . $content;
 			$a[] = '</div>';
 			$a[] = '</div>';
 			$a[] = '</li>';
@@ -146,7 +146,56 @@ class Demenznav_Sh_Public {
 			$html .= $get_li( $line[0], $line[1], $line[2] );
 		}
 		$html .= '</ul>';
-		echo($html);
+		echo( $html );
+	}
+
+
+	function register_shortcodes() {
+		$this->register_shortcode_mi_karte();
+		$this->register_shortcode_input_klassifikation();
+	}
+
+
+	protected function register_shortcode_input_klassifikation() {
+
+		add_shortcode( 'input_klassifikationen', function () {
+			$taxonomies = get_terms( [
+				'taxonomy'   => 'klassifikation',
+				'hide_empty' => false,
+				'parent'     => 0
+			] );
+			$list       = [];
+			$template   = '<div class="form-check"><input class="form-check-input" type="checkbox" value="klassif[][%s]" id="K_%s"><label class="form-check-label" for="K_%s">%s</label></div>';
+			foreach ( $taxonomies as $tax ) {
+				$list[] = sprintf( $template,
+					$tax->term_id,
+					$tax->term_id,
+					$tax->term_id,
+					$tax->name
+				);
+			}
+
+			return implode( "\n", $list );
+		} );
+
+	}
+
+	protected function register_shortcode_mi_karte() {
+		add_shortcode( 'mi_karte', function () {
+			$file = get_stylesheet_directory() . '/includes/karte.php';
+			if ( ! file_exists( $file ) ) {
+				return '';
+			}
+			ob_start();
+			require $file;
+			$var = ob_get_contents();
+			ob_end_clean();
+			return $var;
+		} );
+	}
+
+	protected function register_shortcode_searchhome() {
+
 	}
 
 
