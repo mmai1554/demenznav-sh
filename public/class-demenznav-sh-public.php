@@ -75,9 +75,17 @@ class Demenznav_Sh_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, true );
+		wp_localize_script( $this->plugin_name, 'umkreissuche', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
 
 	}
+
+	public function ajax_umkreissuche() {
+		echo get_bloginfo( 'title' );
+		die();
+	}
+
+
 
 	function register_presenter() {
 		add_action( 'format_website', array( $this, 'format_website' ) );
@@ -190,6 +198,7 @@ class Demenznav_Sh_Public {
 			require $file;
 			$var = ob_get_contents();
 			ob_end_clean();
+
 			return $var;
 		} );
 	}
