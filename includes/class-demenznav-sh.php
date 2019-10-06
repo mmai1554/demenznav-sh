@@ -57,6 +57,7 @@ class Demenznav_Sh {
 	 */
 	protected $version;
 
+
 	/**
 	 * Define the core functionality of the plugin.
 	 *
@@ -157,6 +158,7 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
+		$this->loader->add_action( 'init', $plugin_admin, 'register_einrichtung_admin' );
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
@@ -171,13 +173,15 @@ class Demenznav_Sh {
 	private function define_public_hooks() {
 
 		$plugin_public = new Demenznav_Sh_Public( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_presenter' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
+		$this->loader->add_action( 'init', $plugin_public, 'register_global_variables' );
 		$this->loader->add_action( 'wp_ajax_nopriv_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
 		$this->loader->add_action( 'wp_ajax_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
+		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_query_vars' );
+
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
