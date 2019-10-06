@@ -30,7 +30,25 @@ class Demenznav_Sh_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
+		self::create_tables();
+	}
 
+	public static function create_tables() {
+		global $wpdb;
+		$table_name      = $wpdb->prefix . "latlong";
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE IF NOT EXISTS $table_name (
+  id bigint(20) NOT NULL AUTO_INCREMENT,
+  post_id bigint(9) NOT NULL,
+  lat float NOT NULL,
+  lng float NOT NULL,
+  PRIMARY KEY  (id),
+  KEY post_id (post_id)
+) $charset_collate;";
+
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+		dbDelta( $sql );
 	}
 
 }
