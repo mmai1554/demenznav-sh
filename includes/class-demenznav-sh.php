@@ -111,7 +111,8 @@ class Demenznav_Sh {
 		 * of the plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-demenznav-sh-i18n.php';
-
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/GeoData.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Umkreissuche.php';
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
@@ -122,6 +123,8 @@ class Demenznav_Sh {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-demenznav-sh-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
+
 
 		$this->loader = new Demenznav_Sh_Loader();
 

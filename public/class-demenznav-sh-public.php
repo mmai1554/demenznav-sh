@@ -10,6 +10,8 @@
  * @subpackage Demenznav_Sh/public
  */
 
+use mnc\Umkreissuche;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -20,7 +22,6 @@
  * @subpackage Demenznav_Sh/public
  * @author     ReBoom GmbH <m.mai@reboom.de>
  */
-require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
 
 class Demenznav_Sh_Public {
 
@@ -42,9 +43,6 @@ class Demenznav_Sh_Public {
 	 */
 	private $version;
 
-	const QUERY_VAR_KLASSIFIKATION = 'mnc-einrichtung';
-	const QUERY_VAR_PLZ = 'mnc-plz';
-
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -61,8 +59,8 @@ class Demenznav_Sh_Public {
 	}
 
 	public function register_query_vars( $vars ) {
-		$vars[] = self::QUERY_VAR_KLASSIFIKATION;
-		$vars[] = self::QUERY_VAR_PLZ;
+		$vars[] = Umkreissuche::QUERY_VAR_KLASSIFIKATION;
+		$vars[] = Umkreissuche::QUERY_VAR_PLZ;
 
 		return $vars;
 	}
@@ -174,11 +172,10 @@ class Demenznav_Sh_Public {
 
 	function register_shortcodes() {
 		$this->register_shortcode_mi_karte();
-		$this->register_shortcode_input_klassifikation();
-		$this->register_mnc_radiussearch_results();
+		// $this->register_shortcode_input_klassifikation();
 	}
 
-	protected function einrichtung_exists($id) {
+	protected function einrichtung_exists( $id ) {
 		return false;
 	}
 
@@ -186,42 +183,18 @@ class Demenznav_Sh_Public {
 
 	}
 
-	protected  function addError($field, $message) {
-		if(!isset($mnc_error)) {
+	protected function addError( $field, $message ) {
+		if ( ! isset( $mnc_error ) ) {
 			$mnc_error = new WP_Error;
 		}
-		$mnc_error->add($field, $message);
+		$mnc_error->add( $field, $message );
 	}
 
 	protected function hasErrors() {
 		global $mnc_error;
+
 		return 1 > count( $mnc_error->get_error_messages() );
 	}
-
-	function register_mnc_radiussearch_results() {
-
-		add_shortcode( 'mnc-radiussearch-results', function () {
-
-			if ( get_query_var( self::QUERY_VAR_KLASSIFIKATION ) ) {
-				$einrichtung =  str_replace('K', '', sanitize_text_field(get_query_var( self::QUERY_VAR_KLASSIFIKATION )));
-				if(!$this->einrichtung_exists($einrichtung)) {
-					$this->addError(self::QUERY_VAR_KLASSIFIKATION, 'Bitte wählen Sie eine Einrichtung aus.');
-				}
-			}
-
-			if ( get_query_var( self::QUERY_VAR_PLZ ) ) {
-				$plz  = sanitize_text_field(get_query_var( self::QUERY_VAR_PLZ ));
-				$re = '/^[0-9]{1,5}$/m';
-				if(!preg_match($re, $plz)) {
-					$this->addError(self::QUERY_VAR_PLZ, 'Bitte eine korrekte Postleitzahlsuche eingeben, erlaubt sind vollständige oder Anfangsbereiche von Postleitzahlen. ');
-				}
-			}
-//			if($this->hasErrors()) {
-//				wp_redirect('/');
-//			}
-		} );
-	}
-
 
 	protected function register_shortcode_input_klassifikation() {
 
@@ -261,6 +234,8 @@ class Demenznav_Sh_Public {
 			return $var;
 		} );
 	}
+
+
 
 
 }
