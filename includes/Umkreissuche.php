@@ -21,6 +21,8 @@ class Umkreissuche {
 	protected $radius_min = 0;
 	protected $radius_max = 100; // So default is between 0 and 100 KM
 
+	protected $action_fired = null;
+
 	/**
 	 * @var null | GeoData
 	 */
@@ -32,14 +34,16 @@ class Umkreissuche {
 	/**
 	 * add query vars to WP Query Vars
 	 * called in register_query_vars in Demenznav_Sh_Public
+	 *
 	 * @param $vars
 	 *
 	 * @return array
 	 */
-	public static function appendQueryVars($vars) {
+	public static function appendQueryVars( $vars ) {
 		$vars[] = self::QUERY_VAR_KLASSIFIKATION;
 		$vars[] = self::QUERY_VAR_PLZ;
 		$vars[] = self::QUERY_VAR_RADIUS;
+
 		return $vars;
 	}
 
@@ -61,6 +65,22 @@ class Umkreissuche {
 		return $this->objKlassifikation !== null;
 	}
 
+	public function showSearchform() {
+		return $this->hasErrors() || ! $this->isActionFired();
+	}
+
+	public function isActionFired() {
+		if ( $this->action_fired === null ) {
+			$a                  = get_query_var( self::QUERY_VAR_PLZ, false );
+			$a                  = $a || get_query_var( self::QUERY_VAR_KLASSIFIKATION, false );
+			$a                  = $a || get_query_var( self::QUERY_VAR_RADIUS, false );
+			$this->action_fired = $a;
+		}
+
+		return $this->action_fired;
+	}
+
+
 	/**
 	 * @return \WP_Term|null
 	 */
@@ -77,6 +97,7 @@ class Umkreissuche {
 	}
 
 	public function validateInput() {
+
 
 		// check Klassifikation:
 
@@ -98,7 +119,7 @@ class Umkreissuche {
 		// check Radius:
 
 		$radius = (int) sanitize_text_field( get_query_var( self::QUERY_VAR_RADIUS ) );
-		if($radius <= 0  || $radius >= 100) {
+		if ( $radius <= 0 || $radius >= 100 ) {
 			$radius = 100;
 		}
 		$this->radius_max = $radius;
@@ -149,7 +170,8 @@ class Umkreissuche {
 				]
 			]
 		);
-		return new \WP_Query($args);
+
+		return new \WP_Query( $args );
 	}
 
 	/**
@@ -181,6 +203,27 @@ class Umkreissuche {
 		$where .= " AND $wpdb->posts.ID IN (SELECT post_id FROM $table WHERE $lcalc <= " . $radius . ")";
 
 		return $where;
+	}
+
+	/**
+	 * calculates the distance between to points
+	 *
+	 * @param $latitudeFrom
+	 * @param $longitudeFrom
+	 * @param $latitudeTo
+	 * @param $longitudeTo
+	 *
+	 * @return float
+	 */
+	public static function getDistance( $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo ) {
+		$rad = M_PI / 180;
+		//Calculate distance from latitude and longitude
+		$theta = $longitudeFrom - $longitudeTo;
+		$dist  = sin( $latitudeFrom * $rad )
+		         * sin( $latitudeTo * $rad ) + cos( $latitudeFrom * $rad )
+		                                       * cos( $latitudeTo * $rad ) * cos( $theta * $rad );
+
+		return acos( $dist ) / $rad * 60 * 1.853;
 	}
 
 
