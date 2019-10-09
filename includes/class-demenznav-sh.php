@@ -111,6 +111,7 @@ class Demenznav_Sh {
 		 * of the plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-demenznav-sh-i18n.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Maln.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/GeoData.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Umkreissuche.php';
 		/**
