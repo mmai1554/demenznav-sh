@@ -14,8 +14,8 @@ class Umkreissuche {
 	protected $objKlassifikation = null;
 	protected $zipcode = '';
 	// radius search in KM:
-	protected $min = 0;
-	protected $max = 100; // So default is between 0 and 100 KM
+	protected $radius_min = 0;
+	protected $radius_max = 100; // So default is between 0 and 100 KM
 
 	/**
 	 * @var null | GeoData
@@ -26,9 +26,9 @@ class Umkreissuche {
 	}
 
 
-	public function setRadius($min, $max) {
-		$this->min = $min;
-		$this->max = $max;
+	public function setRadius( $min, $max ) {
+		$this->radius_min = $min;
+		$this->radius_max = $max;
 	}
 
 	public function hasErrors() {
@@ -43,6 +43,13 @@ class Umkreissuche {
 		return $this->objKlassifikation !== null;
 	}
 
+	public function getKlassifikation() {
+		return $this->objKlassifikation;
+	}
+
+	public function getRadius() {
+		return $this->radius_max;
+	}
 
 	public function validateInput() {
 
@@ -69,12 +76,14 @@ class Umkreissuche {
 
 		if ( ! $plz ) {
 			$this->arrErrors[ self::QUERY_VAR_PLZ ] = 'Bitte Postleitzahl wählen';
+
 			return false;
 		}
 
 		$re = '/^[0-9]{1,5}$/m';
 		if ( ! preg_match( $re, $plz ) ) {
 			$this->arrErrors[ self::QUERY_VAR_PLZ ] = 'Bitte eine korrekte Postleitzahlsuche eingeben, erlaubt sind vollständige oder Anfangsbereiche von Postleitzahlen. ';
+
 			return false;
 		}
 
@@ -82,12 +91,13 @@ class Umkreissuche {
 		$this->zipcode = $plz;
 		// at this  point we are querying the geodata to be able to chek against a valid zipcode (SH zipcode)
 
-		$this->objGeoData = new GeoData($plz);
+		$this->objGeoData = new GeoData( $plz );
 		$this->objGeoData->init();
 
 		// Schleswig-Holstein
-		if(!$this->objGeoData->isPLZInBundesland('Schleswig-Holstein')) {
+		if ( ! $this->objGeoData->isPLZInBundesland( 'Schleswig-Holstein' ) ) {
 			$this->arrErrors[ self::QUERY_VAR_PLZ ] = 'Zurzeit sind nur Umkreissuchen in Schleswig-Holstein in unserem System. Bitte wählen Sie ein Postleitzahl aus Schleswig-Holstein.';
+
 			return false;
 		}
 
@@ -100,6 +110,7 @@ class Umkreissuche {
 	 * only retrieve posts within the radius.
 	 *
 	 * Add a WP Filter Query (use in retrieving the posts with add_filter( 'posts_where' , ... );
+	 *
 	 * @param $where
 	 *
 	 * @return string
@@ -110,17 +121,18 @@ class Umkreissuche {
 		// the centre of our search
 		$lat    = $this->objGeoData->getLat();
 		$lng    = $this->objGeoData->getLong();
-		$radius = $this->max;
+		$radius = $this->radius_max;
 
-		$table  = 'wp_latlong';
+		$table = 'wp_latlong';
 		// Append our radius calculation to the WHERE
-		$lcalc = trim("( 6371 * acos( cos( radians(" . $lat . ") )
+		$lcalc = trim( "( 6371 * acos( cos( radians(" . $lat . ") )
 		                        * cos( radians( lat ) )
 		                        * cos( radians( lng )
 		                               - radians(" . $lng . ") )
 		                        + sin( radians(" . $lat . ") )
-		                          * sin( radians( lat ) ) ) )");
+		                          * sin( radians( lat ) ) ) )" );
 		$where .= " AND $wpdb->posts.ID IN (SELECT post_id FROM $table WHERE $lcalc <= " . $radius . ")";
+
 		return $where;
 	}
 
