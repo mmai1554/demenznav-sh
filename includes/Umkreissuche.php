@@ -3,9 +3,6 @@
 
 namespace mnc;
 
-
-use Demenznav_Sh_Public;
-
 class Umkreissuche {
 
 
@@ -25,13 +22,21 @@ class Umkreissuche {
 	 */
 	protected $objGeoData = null;
 
-	public function __construct($min, $max) {
+	public function __construct() {
+	}
+
+
+	public function setRadius($min, $max) {
 		$this->min = $min;
 		$this->max = $max;
 	}
 
 	public function hasErrors() {
 		return count( $this->arrErrors ) > 0;
+	}
+
+	public function getErrors() {
+		return $this->arrErrors;
 	}
 
 	protected function doesKlassifikationExist() {
