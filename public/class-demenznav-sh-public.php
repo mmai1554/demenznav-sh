@@ -105,7 +105,6 @@ class Demenznav_Sh_Public {
 
 	function register_presenter() {
 		add_action( 'format_website', array( $this, 'format_website' ) );
-		add_action( 'format_contact', array( $this, 'format_contact' ) );
 	}
 
 	/**
@@ -127,50 +126,6 @@ class Demenznav_Sh_Public {
 		echo sprintf( '<a href="%s" target="_blank" title="Website %s in neuem Fenster öffnen...">%s</a>',
 			$url, $url, $url
 		);
-	}
-
-	function format_contact() {
-		$get_li  = function ( $label, $content, $icon ) {
-			$a   = [];
-			$a[] = '<li>';
-			$a[] = '<div class="icon-wrap">';
-			$a[] = '<span class="fl-icon">';
-			$a[] = '<i class="ua-icon ' . $icon . '"></i>';
-			$a[] = '</span>';
-			$a[] = '<div class="fl-icon-text">';
-			$a[] = $label . $content;
-			$a[] = '</div>';
-			$a[] = '</div>';
-			$a[] = '</li>';
-
-			return implode( "\n", $a );
-		};
-		$contact = [];
-		if ( $url = get_field( 'website', false, false ) ) {
-			$content            = sprintf( '<a href="%s" target="_blank" title="Website %s in neuem Fenster öffnen...">%s</a>', $url, $url, $url );
-			$contact['website'] = [ 'Web: ', $content, 'ua-icon-globe2' ];
-		}
-		if ( $email = get_field( 'email', false, false ) ) {
-			$content          = sprintf( '<a href="%s" target="_blank" title="Mailprogramm öffnen und E-Mail an %s senden...">%s</a>', $email, $email, $email );
-			$contact['email'] = [ 'E-Mail: ', $content, 'ua-icon-icon-6-mail-envelope-closed2' ];
-		}
-		if ( get_field( 'strasse' ) ) {
-			$content            = get_field( 'strasse' ) . '<br>' . get_field( 'plz' ) . ' ' . get_field( 'ort' );
-			$contact['adresse'] = [ '', $content, 'ua-icon-location-pin' ];
-		}
-		if ( get_field( 'telefon' ) ) {
-			$content            = get_field( 'telefon' );
-			$contact['telefon'] = [ 'Telefon: ', $content, 'ua-icon-phone3' ];
-		}
-		if ( count( $contact ) == 0 ) {
-			return '';
-		}
-		$html = '<ul>';
-		foreach ( $contact as $key => $line ) {
-			$html .= $get_li( $line[0], $line[1], $line[2] );
-		}
-		$html .= '</ul>';
-		echo( $html );
 	}
 
 
