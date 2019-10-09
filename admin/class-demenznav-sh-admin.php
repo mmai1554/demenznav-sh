@@ -236,15 +236,14 @@ class Demenznav_Sh_Admin {
 		);
 		register_taxonomy( $key_category2_for_cpt, array( $key_cpt ), $args );
 
-
 	}
+
 
 	function register_einrichtung_admin() {
 		// Dieser Hook ist steuert die Methode, die die eigene Admin Seite aufbaut:
-		add_submenu_page( 'edit.php?post_type=einrichtung', 'admin', 'admin', 'administrator', 'einrichtung_admin_page', array( $this, 'einrichtung_admin_page' ) );
+		add_submenu_page( 'edit.php?post_type=einrichtung', 'GeoData Sync', 'Admin', 'administrator', 'einrichtung_admin_page', array( $this, 'einrichtung_admin_page' ) );
 		// Dieser Hook steuert, welche Methode nach submit (action) aufgerufen wird:
 		add_action( 'admin_action_einrichtung_sync_latlang', array( $this, 'einrichtung_sync_latlang' ) );
-//		add_action( 'admin_action_einrichtung_map_brochures', array( $this, 'einrichtung_map_brochures' ) );
 	}
 
 	function einrichtung_sync_latlang() {
@@ -259,13 +258,7 @@ class Demenznav_Sh_Admin {
 			$objQuery->the_post();
 			$this->save_latlng( $post );
 		}
-		add_action( 'admin_notices', function () {
-			?>
-            <div class="notice notice-success is-dismissible">
-                <p><?php _e( 'Done!', 'demenzwegweisersh' ); ?></p>
-            </div>
-			<?php
-		} );
+		echo('Done!');
 	}
 
 	/**

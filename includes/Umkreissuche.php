@@ -12,6 +12,9 @@ class Umkreissuche {
 
 	protected $arrErrors = [];
 
+	/**
+	 * @var null | \WP_Term
+	 */
 	protected $objKlassifikation = null;
 	protected $zipcode = '';
 	// radius search in KM:
@@ -58,6 +61,9 @@ class Umkreissuche {
 		return $this->objKlassifikation !== null;
 	}
 
+	/**
+	 * @return \WP_Term|null
+	 */
 	public function getKlassifikation() {
 		return $this->objKlassifikation;
 	}
@@ -130,6 +136,20 @@ class Umkreissuche {
 
 		// everything seems ok:
 		return true;
+	}
+
+	public function getWPQuery() {
+		$args = array(
+			'post_type'      => 'einrichtung',
+			'posts_per_page' => 10,
+			'tax_query'      => [
+				[
+					'taxonomy' => 'klassifikation',
+					'terms'    => $this->objKlassifikation->term_id,
+				]
+			]
+		);
+		return new \WP_Query($args);
 	}
 
 	/**
