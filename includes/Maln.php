@@ -11,6 +11,22 @@ namespace mnc;
  */
 abstract class Maln {
 
+	public static function icon_li( $content, $icon ) {
+		$a   = [];
+		$a[] = '<li>';
+		$a[] = '<div class="icon-wrap">';
+		$a[] = '<span class="fl-icon">';
+		$a[] = '<i class="ua-icon ' . $icon . '"></i>';
+		$a[] = '</span>';
+		$a[] = '<div class="fl-icon-text">';
+		$a[] = $content;
+		$a[] = '</div>';
+		$a[] = '</div>';
+		$a[] = '</li>';
+
+		return implode( "", $a );
+	}
+
 
 	/**
 	 * @param $html
@@ -55,18 +71,19 @@ abstract class Maln {
 	 *
 	 * @return string
 	 */
-	public static function atos(array $arr) {
-		return implode( "\n", $arr);
+	public static function atos( array $arr ) {
+		return implode( "\n", $arr );
 	}
 
-	public static function ul($arr, $class = '', $style = '', $id = '') {
-		$html = [];
-		$html[] = self::ul_open($class, $style, $id);
-		foreach($arr as $item) {
-			$html[] = self::li($item);
+	public static function ul( $arr, $class = '', $style = '', $id = '' ) {
+		$html   = [];
+		$html[] = self::ul_open( $class, $style, $id );
+		foreach ( $arr as $item ) {
+			$html[] = self::li( $item );
 		}
 		$html[] = self::ul_close();
-		return self::atos($arr);
+
+		return self::atos( $arr );
 	}
 
 	/**
@@ -131,8 +148,6 @@ abstract class Maln {
 
 		return implode( ' ', $arrMap );
 	}
-
-
 
 
 }
