@@ -8,6 +8,7 @@ class Umkreissuche {
 
 	const QUERY_VAR_PLZ = 'mnc-plz';
 	const QUERY_VAR_KLASSIFIKATION = 'mnc-einrichtung';
+	const QUERY_VAR_RADIUS = 'mnc-rmax';
 
 	protected $arrErrors = [];
 
@@ -23,6 +24,20 @@ class Umkreissuche {
 	protected $objGeoData = null;
 
 	public function __construct() {
+	}
+
+	/**
+	 * add query vars to WP Query Vars
+	 * called in register_query_vars in Demenznav_Sh_Public
+	 * @param $vars
+	 *
+	 * @return array
+	 */
+	public static function appendQueryVars($vars) {
+		$vars[] = self::QUERY_VAR_KLASSIFIKATION;
+		$vars[] = self::QUERY_VAR_PLZ;
+		$vars[] = self::QUERY_VAR_RADIUS;
+		return $vars;
 	}
 
 
@@ -47,6 +62,10 @@ class Umkreissuche {
 		return $this->objKlassifikation;
 	}
 
+	public function getZipcode() {
+		return $this->zipcode;
+	}
+
 	public function getRadius() {
 		return $this->radius_max;
 	}
@@ -69,6 +88,14 @@ class Umkreissuche {
 
 			return false;
 		}
+
+		// check Radius:
+
+		$radius = (int) sanitize_text_field( get_query_var( self::QUERY_VAR_RADIUS ) );
+		if($radius <= 0  || $radius >= 100) {
+			$radius = 100;
+		}
+		$this->radius_max = $radius;
 
 		// check  PLZ:
 

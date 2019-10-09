@@ -58,10 +58,14 @@ class Demenznav_Sh_Public {
 
 	}
 
+	/**
+	 * hook method for inlcude own params in WP Query vars
+	 * @param $vars
+	 *
+	 * @return array
+	 */
 	public function register_query_vars( $vars ) {
-		$vars[] = Umkreissuche::QUERY_VAR_KLASSIFIKATION;
-		$vars[] = Umkreissuche::QUERY_VAR_PLZ;
-
+		$vars = Umkreissuche::appendQueryVars($vars);
 		return $vars;
 	}
 
