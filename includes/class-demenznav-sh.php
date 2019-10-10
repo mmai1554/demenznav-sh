@@ -186,6 +186,8 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'wp_ajax_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
 		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_query_vars' );
 
+		// $this->loader->add_filter( 'posts_join', $plugin_public, 'add_join_geocode' );
+
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}

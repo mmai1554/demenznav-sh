@@ -66,7 +66,8 @@ class Umkreissuche {
 	}
 
 	public function showSearchform() {
-		return $this->hasErrors() || ! $this->isActionFired();
+		return true;
+		// return $this->hasErrors() || ! $this->isActionFired();
 	}
 
 	public function isActionFired() {
@@ -150,7 +151,8 @@ class Umkreissuche {
 
 		// Schleswig-Holstein
 		if ( ! $this->objGeoData->isPLZInBundesland( 'Schleswig-Holstein' ) ) {
-			$this->arrErrors[ self::QUERY_VAR_PLZ ] = 'Zurzeit sind nur Umkreissuchen in Schleswig-Holstein in unserem System. Bitte wählen Sie ein Postleitzahl aus Schleswig-Holstein.';
+			$this->arrErrors[ self::QUERY_VAR_PLZ ] = 'Zurzeit sind nur Suchen in Schleswig-Holstein möglich.
+			Die Postleitzahl ' . $plz . ' ist nicht hinterlegt. Bitte wählen Sie eine Postleitzahl aus Schleswig-Holstein.';
 
 			return false;
 		}
@@ -206,6 +208,29 @@ class Umkreissuche {
 	}
 
 	/**
+	 * join the geocode table if a search is in progress
+	 *
+	 * @param $join
+	 *
+	 * @return string
+	 */
+	function add_join_geocode( $join ) {
+		global $wp_query, $wpdb;
+		// if (!empty($wp_query->query_vars[\mnc\Umkreissuche::QUERY_VAR_PLZ])) {
+		$join .= "LEFT JOIN wp_latlong ON ($wpdb->posts.ID = wp_latlong.post_id)";
+
+		//}
+		return $join;
+	}
+
+	function add_fields_geocode( $fields, $wp_query ) {
+		global $wpdb;
+		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude";
+
+		return $fields;
+	}
+
+	/**
 	 * calculates the distance between to points
 	 *
 	 * @param $latitudeFrom
@@ -216,7 +241,8 @@ class Umkreissuche {
 	 * @return float
 	 */
 	public static function getDistance( $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo ) {
-		$rad = M_PI / 180;
+		// $rad = M_PI / 180;
+		$rad = 0.0174532925199;
 		//Calculate distance from latitude and longitude
 		$theta = $longitudeFrom - $longitudeTo;
 		$dist  = sin( $latitudeFrom * $rad )
@@ -224,6 +250,16 @@ class Umkreissuche {
 		                                       * cos( $latitudeTo * $rad ) * cos( $theta * $rad );
 
 		return acos( $dist ) / $rad * 60 * 1.853;
+	}
+
+
+	public function getDistanceOfEinrichtung( \WP_Post $post ) {
+		$lat_from = $this->objGeoData->getLat();
+		$lng_from = $this->objGeoData->getLong();
+		$lat_to   = $post->latitude;
+		$lng_to   = $post->longitude;
+
+		return self::getDistance( $lat_from, $lng_from, $lat_to, $lng_to );
 	}
 
 
