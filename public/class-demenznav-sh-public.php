@@ -10,6 +10,8 @@
  * @subpackage Demenznav_Sh/public
  */
 
+use mnc\Umkreissuche;
+
 /**
  * The public-facing functionality of the plugin.
  *
@@ -20,7 +22,6 @@
  * @subpackage Demenznav_Sh/public
  * @author     ReBoom GmbH <m.mai@reboom.de>
  */
-require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
 
 class Demenznav_Sh_Public {
 
@@ -58,6 +59,17 @@ class Demenznav_Sh_Public {
 	}
 
 	/**
+	 * hook method for inlcude own params in WP Query vars
+	 * @param $vars
+	 *
+	 * @return array
+	 */
+	public function register_query_vars( $vars ) {
+		$vars = Umkreissuche::appendQueryVars($vars);
+		return $vars;
+	}
+
+	/**
 	 * Register the stylesheets for the public-facing side of the site.
 	 *
 	 * @since    1.0.0
@@ -75,13 +87,24 @@ class Demenznav_Sh_Public {
 	 */
 	public function enqueue_scripts() {
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, false );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, true );
+		wp_localize_script( $this->plugin_name, 'umkreissuche', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
 
 	}
 
+	public function register_global_variables() {
+		global $mnc_error;
+		$mnc_error = new WP_Error();
+	}
+
+	public function ajax_umkreissuche() {
+		echo get_bloginfo( 'title' );
+		die();
+	}
+
+
 	function register_presenter() {
 		add_action( 'format_website', array( $this, 'format_website' ) );
-		add_action( 'format_contact', array( $this, 'format_contact' ) );
 	}
 
 	/**
@@ -105,56 +128,32 @@ class Demenznav_Sh_Public {
 		);
 	}
 
-	function format_contact() {
-		$get_li  = function ( $label, $content, $icon ) {
-			$a   = [];
-			$a[] = '<li>';
-			$a[] = '<div class="icon-wrap">';
-			$a[] = '<span class="fl-icon">';
-			$a[] = '<i class="ua-icon ' . $icon . '"></i>';
-			$a[] = '</span>';
-			$a[] = '<div class="fl-icon-text">';
-			$a[] = $label . $content;
-			$a[] = '</div>';
-			$a[] = '</div>';
-			$a[] = '</li>';
-
-			return implode( "\n", $a );
-		};
-		$contact = [];
-		if ( $url = get_field( 'website', false, false ) ) {
-			$content            = sprintf( '<a href="%s" target="_blank" title="Website %s in neuem Fenster öffnen...">%s</a>', $url, $url, $url );
-			$contact['website'] = [ 'Web: ', $content, 'ua-icon-globe2' ];
-		}
-		if ( $email = get_field( 'email', false, false ) ) {
-			$content          = sprintf( '<a href="%s" target="_blank" title="Mailprogramm öffnen und E-Mail an %s senden...">%s</a>', $email, $email, $email );
-			$contact['email'] = [ 'E-Mail: ', $content, 'ua-icon-icon-6-mail-envelope-closed2' ];
-		}
-		if ( get_field( 'strasse' ) ) {
-			$content            = get_field( 'strasse' ) . '<br>' . get_field( 'plz' ) . ' ' . get_field( 'ort' );
-			$contact['adresse'] = [ '', $content, 'ua-icon-location-pin' ];
-		}
-		if ( get_field( 'telefon' ) ) {
-			$content            = get_field( 'telefon' );
-			$contact['telefon'] = [ 'Telefon: ', $content, 'ua-icon-phone3' ];
-		}
-		if ( count( $contact ) == 0 ) {
-			return '';
-		}
-		$html = '<ul>';
-		foreach ( $contact as $key => $line ) {
-			$html .= $get_li( $line[0], $line[1], $line[2] );
-		}
-		$html .= '</ul>';
-		echo( $html );
-	}
-
 
 	function register_shortcodes() {
 		$this->register_shortcode_mi_karte();
-		$this->register_shortcode_input_klassifikation();
+		// $this->register_shortcode_input_klassifikation();
 	}
 
+	protected function einrichtung_exists( $id ) {
+		return false;
+	}
+
+	function clear_error_messages() {
+
+	}
+
+	protected function addError( $field, $message ) {
+		if ( ! isset( $mnc_error ) ) {
+			$mnc_error = new WP_Error;
+		}
+		$mnc_error->add( $field, $message );
+	}
+
+	protected function hasErrors() {
+		global $mnc_error;
+
+		return 1 > count( $mnc_error->get_error_messages() );
+	}
 
 	protected function register_shortcode_input_klassifikation() {
 
@@ -190,13 +189,14 @@ class Demenznav_Sh_Public {
 			require $file;
 			$var = ob_get_contents();
 			ob_end_clean();
+
 			return $var;
 		} );
 	}
 
-	protected function register_shortcode_searchhome() {
 
-	}
+
+
 
 
 }

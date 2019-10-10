@@ -74,7 +74,25 @@
      */
     $(function () {
         $('.mi-s2').select2();
+        //
+        $( "#FormUmkreissuche" ).submit(function( event ) {
+            event.preventDefault();
+            $.ajax({
+                url: umkreissuche.ajaxurl,
+                type: 'post',
+                data: {
+                    action: 'ajax_umkreissuche'
+                },
+                success: function( result ) {
+                    alert( result );
+                }
+            })
+        });
     });
+
+
+
+
 
 })(jQuery);
 

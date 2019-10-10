@@ -35,7 +35,7 @@ class Demenznav_Sh {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Demenznav_Sh_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Demenznav_Sh_Loader $loader Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -44,7 +44,7 @@ class Demenznav_Sh {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $plugin_name    The string used to uniquely identify this plugin.
+	 * @var      string $plugin_name The string used to uniquely identify this plugin.
 	 */
 	protected $plugin_name;
 
@@ -53,9 +53,10 @@ class Demenznav_Sh {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      string    $version    The current version of the plugin.
+	 * @var      string $version The current version of the plugin.
 	 */
 	protected $version;
+
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -110,7 +111,9 @@ class Demenznav_Sh {
 		 * of the plugin.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-demenznav-sh-i18n.php';
-
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Maln.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/GeoData.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Umkreissuche.php';
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
@@ -121,6 +124,8 @@ class Demenznav_Sh {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-demenznav-sh-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
+
 
 		$this->loader = new Demenznav_Sh_Loader();
 
@@ -157,7 +162,8 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
-		add_action('acf/init', array($this, 'my_acf_init'));
+		$this->loader->add_action( 'init', $plugin_admin, 'register_einrichtung_admin' );
+		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
 
@@ -171,18 +177,24 @@ class Demenznav_Sh {
 	private function define_public_hooks() {
 
 		$plugin_public = new Demenznav_Sh_Public( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_presenter' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		add_action('acf/init', array($this, 'my_acf_init'));
+		$this->loader->add_action( 'init', $plugin_public, 'register_global_variables' );
+		$this->loader->add_action( 'wp_ajax_nopriv_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
+		$this->loader->add_action( 'wp_ajax_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
+		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_query_vars' );
+
+		// $this->loader->add_filter( 'posts_join', $plugin_public, 'add_join_geocode' );
+
+		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
 
 	// see wp-config for API Key
 	public function my_acf_init() {
-		acf_update_setting('google_api_key', MI_GOOGLE_MAPS_API_KEY);
+		acf_update_setting( 'google_api_key', MI_GOOGLE_MAPS_API_KEY );
 	}
 
 	/**
@@ -198,8 +210,8 @@ class Demenznav_Sh {
 	 * The name of the plugin used to uniquely identify it within the context of
 	 * WordPress and to define internationalization functionality.
 	 *
-	 * @since     1.0.0
 	 * @return    string    The name of the plugin.
+	 * @since     1.0.0
 	 */
 	public function get_plugin_name() {
 		return $this->plugin_name;
@@ -208,8 +220,8 @@ class Demenznav_Sh {
 	/**
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
-	 * @since     1.0.0
 	 * @return    Demenznav_Sh_Loader    Orchestrates the hooks of the plugin.
+	 * @since     1.0.0
 	 */
 	public function get_loader() {
 		return $this->loader;
@@ -218,8 +230,8 @@ class Demenznav_Sh {
 	/**
 	 * Retrieve the version number of the plugin.
 	 *
-	 * @since     1.0.0
 	 * @return    string    The version number of the plugin.
+	 * @since     1.0.0
 	 */
 	public function get_version() {
 		return $this->version;
