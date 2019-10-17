@@ -10,6 +10,8 @@ class Umkreissuche {
 	const QUERY_VAR_KLASSIFIKATION = 'mnc-einrichtung';
 	const QUERY_VAR_RADIUS = 'mnc-rmax';
 
+	const RADIANS = 0.0174532925199; // = PI / 180;
+
 	protected $arrErrors = [];
 
 	/**
@@ -162,6 +164,7 @@ class Umkreissuche {
 	}
 
 	public function getWPQuery() {
+		global $wp_query;
 		$args = array(
 			'post_type'      => 'einrichtung',
 			'posts_per_page' => 10,
@@ -172,9 +175,20 @@ class Umkreissuche {
 				]
 			]
 		);
-
-		return new \WP_Query( $args );
+		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
+		add_filter( 'posts_fields', [ $this, 'add_fields_geocode' ], 10, 2 );
+		add_filter( 'posts_where', [ $this, 'filter_radius_query' ] );
+		add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
+		add_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
+		$wp_query = new \WP_Query( $args );
+		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
+		remove_filter( 'posts_fields', [ $this, 'add_fields_geocode' ] );
+		remove_filter( 'posts_where', [ $this, 'filter_radius_query' ] );
+		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
+		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
+		// return $wp_query;
 	}
+
 
 	/**
 	 * calculate the filter for the radius search
@@ -225,29 +239,75 @@ class Umkreissuche {
 
 	function add_fields_geocode( $fields, $wp_query ) {
 		global $wpdb;
-		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude";
+
+		$lat    = $this->objGeoData->getLat();
+		$lng    = $this->objGeoData->getLong();
+		// $sf = 3.14159 / 180 ;
+
+		// $pythagoras = "(POW((wp_latlong.lng-$lng),2) + POW((wp_latlong.lat-$lat),2))";
+
+		$great_circle_distance = "ACOS(SIN(RADIANS(wp_latlong.lat))*SIN(RADIANS($lat)) + COS(RADIANS(wp_latlong.lat))*COS(RADIANS($lat))*COS(RADIANS((wp_latlong.lng-$lng))))";
+
+		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude, $great_circle_distance as distance";
 
 		return $fields;
+	}
+
+	function orderby_distance( $orderby, $wp_query ) {
+		$comma = "";
+		if ( $orderby ) {
+			$comma = ", ";
+		}
+		$orderby = "distance ASC" . $comma . $orderby;
+
+		return $orderby;
+	}
+
+	function groupby_no( $groupby )
+	{
+		global $wpdb;
+
+		return '';
+
+//		if( !is_search() ) {
+//			return $groupby;
+//		}
+//
+//		// we need to group on post ID
+//
+//		$mygroupby = "{$wpdb->posts}.ID";
+//
+//		if( preg_match( "/$mygroupby/", $groupby )) {
+//			// grouping we need is already there
+//			return $groupby;
+//		}
+//
+//		if( !strlen(trim($groupby))) {
+//			// groupby was empty, use ours
+//			return $mygroupby;
+//		}
+//
+//		// wasn't empty, append ours
+//		return $groupby . ", " . $mygroupby;
 	}
 
 	/**
 	 * calculates the distance between to points
 	 *
-	 * @param $latitudeFrom
-	 * @param $longitudeFrom
-	 * @param $latitudeTo
-	 * @param $longitudeTo
+	 * @param float $lat Latitude of Source
+	 * @param float $lng Longitude of Source
+	 * @param float $dest_lat Latitude of Dest
+	 * @param float $dest_lng Longitude of Dest
 	 *
 	 * @return float
 	 */
-	public static function getDistance( $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo ) {
+	public static function getDistance( $lat, $lng, $dest_lat, $dest_lng ) {
 		// $rad = M_PI / 180;
-		$rad = 0.0174532925199;
+		$rad = self::RADIANS;
 		//Calculate distance from latitude and longitude
-		$theta = $longitudeFrom - $longitudeTo;
-		$dist  = sin( $latitudeFrom * $rad )
-		         * sin( $latitudeTo * $rad ) + cos( $latitudeFrom * $rad )
-		                                       * cos( $latitudeTo * $rad ) * cos( $theta * $rad );
+		$theta = $lng - $dest_lng;
+		$dist  = sin( $lat * $rad ) * sin( $dest_lat * $rad ) + cos( $lat * $rad )
+		                                     * cos( $dest_lat * $rad ) * cos( $theta * $rad );
 
 		return acos( $dist ) / $rad * 60 * 1.853;
 	}
