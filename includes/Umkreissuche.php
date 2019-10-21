@@ -164,16 +164,22 @@ class Umkreissuche {
 				]
 			]
 		);
+		add_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		add_filter( 'posts_fields', [ $this, 'add_fields_geocode' ], 10, 2 );
 		add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
 		add_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		$wp_query = new \WP_Query( $args );
+		remove_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		remove_filter( 'posts_fields', [ $this, 'add_fields_geocode' ] );
 		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
 		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		// return $wp_query;
+	}
+
+	public function query_distinct() {
+		return 'DISTINCT';
 	}
 
 
@@ -226,6 +232,7 @@ class Umkreissuche {
 
 	/**
 	 * We calculate the distance for each entry from to the given lat/lng in GeoData Object and store it in alias distance
+	 *
 	 * @param $fields
 	 * @param $wp_query
 	 *
@@ -234,8 +241,8 @@ class Umkreissuche {
 	function add_fields_geocode( $fields, $wp_query ) {
 		global $wpdb;
 
-		$lat    = $this->objGeoData->getLat();
-		$lng    = $this->objGeoData->getLong();
+		$lat = $this->objGeoData->getLat();
+		$lng = $this->objGeoData->getLong();
 		// $sf = 3.14159 / 180 ;
 
 		// $pythagoras = "(POW((wp_latlong.lng-$lng),2) + POW((wp_latlong.lat-$lat),2))";
@@ -259,12 +266,12 @@ class Umkreissuche {
 
 	/**
 	 * when we orderby distance we cant group by post_id
+	 *
 	 * @param $groupby
 	 *
 	 * @return string
 	 */
-	function groupby_no( $groupby )
-	{
+	function groupby_no( $groupby ) {
 		global $wpdb;
 
 		return '';
@@ -293,8 +300,6 @@ class Umkreissuche {
 
 	/**
 	 * calculates the distance between to points
-	 * @internal  the distance is calculated in the MySQL Query too.
-	 * @todo not the right place?
 	 *
 	 * @param float $lat Latitude of Source
 	 * @param float $lng Longitude of Source
@@ -302,6 +307,9 @@ class Umkreissuche {
 	 * @param float $dest_lng Longitude of Dest
 	 *
 	 * @return float
+	 * @todo not the right place?
+	 *
+	 * @internal  the distance is calculated in the MySQL Query too.
 	 */
 	public static function getDistance( $lat, $lng, $dest_lat, $dest_lng ) {
 		// $rad = M_PI / 180;
@@ -309,7 +317,7 @@ class Umkreissuche {
 		//Calculate distance from latitude and longitude
 		$theta = $lng - $dest_lng;
 		$dist  = sin( $lat * $rad ) * sin( $dest_lat * $rad ) + cos( $lat * $rad )
-		                                     * cos( $dest_lat * $rad ) * cos( $theta * $rad );
+		                                                        * cos( $dest_lat * $rad ) * cos( $theta * $rad );
 
 		return acos( $dist ) / $rad * 60 * 1.853;
 	}
@@ -318,6 +326,7 @@ class Umkreissuche {
 	/**
 	 * only needed when the post is loaded as single instance
 	 * not needed in the Loop! We have already an alias there
+	 *
 	 * @param \WP_Post $post
 	 *
 	 * @return float
