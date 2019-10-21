@@ -8,7 +8,6 @@ class Umkreissuche {
 
 	const QUERY_VAR_PLZ = 'mnc-plz';
 	const QUERY_VAR_KLASSIFIKATION = 'mnc-einrichtung';
-	const QUERY_VAR_RADIUS = 'mnc-rmax';
 
 	const RADIANS = 0.0174532925199; // = PI / 180;
 
@@ -44,7 +43,6 @@ class Umkreissuche {
 	public static function appendQueryVars( $vars ) {
 		$vars[] = self::QUERY_VAR_KLASSIFIKATION;
 		$vars[] = self::QUERY_VAR_PLZ;
-		$vars[] = self::QUERY_VAR_RADIUS;
 
 		return $vars;
 	}
@@ -76,7 +74,6 @@ class Umkreissuche {
 		if ( $this->action_fired === null ) {
 			$a                  = get_query_var( self::QUERY_VAR_PLZ, false );
 			$a                  = $a || get_query_var( self::QUERY_VAR_KLASSIFIKATION, false );
-			$a                  = $a || get_query_var( self::QUERY_VAR_RADIUS, false );
 			$this->action_fired = $a;
 		}
 
@@ -118,14 +115,6 @@ class Umkreissuche {
 
 			return false;
 		}
-
-		// check Radius:
-
-		$radius = (int) sanitize_text_field( get_query_var( self::QUERY_VAR_RADIUS ) );
-		if ( $radius <= 0 || $radius >= 100 ) {
-			$radius = 100;
-		}
-		$this->radius_max = $radius;
 
 		// check  PLZ:
 
@@ -177,13 +166,11 @@ class Umkreissuche {
 		);
 		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		add_filter( 'posts_fields', [ $this, 'add_fields_geocode' ], 10, 2 );
-		add_filter( 'posts_where', [ $this, 'filter_radius_query' ] );
 		add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
 		add_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		$wp_query = new \WP_Query( $args );
 		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		remove_filter( 'posts_fields', [ $this, 'add_fields_geocode' ] );
-		remove_filter( 'posts_where', [ $this, 'filter_radius_query' ] );
 		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
 		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		// return $wp_query;
@@ -237,6 +224,13 @@ class Umkreissuche {
 		return $join;
 	}
 
+	/**
+	 * We calculate the distance for each entry from to the given lat/lng in GeoData Object and store it in alias distance
+	 * @param $fields
+	 * @param $wp_query
+	 *
+	 * @return string
+	 */
 	function add_fields_geocode( $fields, $wp_query ) {
 		global $wpdb;
 
@@ -263,6 +257,12 @@ class Umkreissuche {
 		return $orderby;
 	}
 
+	/**
+	 * when we orderby distance we cant group by post_id
+	 * @param $groupby
+	 *
+	 * @return string
+	 */
 	function groupby_no( $groupby )
 	{
 		global $wpdb;
@@ -293,6 +293,8 @@ class Umkreissuche {
 
 	/**
 	 * calculates the distance between to points
+	 * @internal  the distance is calculated in the MySQL Query too.
+	 * @todo not the right place?
 	 *
 	 * @param float $lat Latitude of Source
 	 * @param float $lng Longitude of Source
@@ -313,6 +315,13 @@ class Umkreissuche {
 	}
 
 
+	/**
+	 * only needed when the post is loaded as single instance
+	 * not needed in the Loop! We have already an alias there
+	 * @param \WP_Post $post
+	 *
+	 * @return float
+	 */
 	public function getDistanceOfEinrichtung( \WP_Post $post ) {
 		$lat_from = $this->objGeoData->getLat();
 		$lng_from = $this->objGeoData->getLong();
