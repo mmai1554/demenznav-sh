@@ -154,9 +154,14 @@ class Umkreissuche {
 
 	public function getWPQuery() {
 		global $wp_query;
+		$posts_per_page = get_option('posts_per_page', 10);
+		$paged = get_query_var('paged') ? get_query_var('paged') : 1;
+		$offset = ($paged - 1) * $posts_per_page;
 		$args = array(
 			'post_type'      => 'einrichtung',
-			'posts_per_page' => 10,
+			'posts_per_page' => $posts_per_page,
+			'paged' => $paged,
+			'offset' => $offset,
 			'tax_query'      => [
 				[
 					'taxonomy' => 'klassifikation',
