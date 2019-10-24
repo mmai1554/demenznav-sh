@@ -40,6 +40,10 @@ class Demenznav_Sh_Admin {
 	 */
 	private $version;
 
+	const CPT_EINRICHTUNG = 'einrichtung';
+	const TAXONOMY_KLASSIFIKATION = 'klassifikation';
+	const TAXONOMY_KREIS = 'kreis';
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -103,9 +107,9 @@ class Demenznav_Sh_Admin {
 
 	public function register_custom_post_types() {
 
-		$key_cpt               = 'einrichtung';
-		$key_category1_for_cpt = 'klassifikation';
-		$key_category2_for_cpt = 'kreis';
+		$key_cpt            = self::CPT_EINRICHTUNG;
+		$tax_klassifikation = self::TAXONOMY_KLASSIFIKATION;
+		$tax_kreis          = self::TAXONOMY_KREIS;
 
 		$text_domain = $key_cpt;
 		$labels      = array(
@@ -148,7 +152,7 @@ class Demenznav_Sh_Admin {
 			'description'         => __( 'Einrichtungen', $text_domain ),
 			'labels'              => $labels,
 			'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', ),
-			'taxonomies'          => array( $key_category1_for_cpt, $key_category2_for_cpt, 'post_tag' ),
+			'taxonomies'          => array( $tax_klassifikation, $tax_kreis, 'post_tag' ),
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -167,8 +171,7 @@ class Demenznav_Sh_Admin {
 		register_post_type( $key_cpt, $args );
 
 		// Projektkategorie
-		$text_domain = $key_category1_for_cpt;
-		$labels      = array(
+		$labels = array(
 			'name'                       => _x( 'Klassifikationen', 'Taxonomy General Name', $text_domain ),
 			'singular_name'              => _x( 'Klassifikation', 'Taxonomy Singular Name', $text_domain ),
 			'menu_name'                  => __( 'Klassifikation', $text_domain ),
@@ -190,7 +193,7 @@ class Demenznav_Sh_Admin {
 			'items_list'                 => __( 'Items list', $text_domain ),
 			'items_list_navigation'      => __( 'Items list navigation', $text_domain ),
 		);
-		$args        = array(
+		$args   = array(
 			'labels'            => $labels,
 			'hierarchical'      => true,
 			'public'            => true,
@@ -199,11 +202,10 @@ class Demenznav_Sh_Admin {
 			'show_in_nav_menus' => true,
 			'show_tagcloud'     => true,
 		);
-		register_taxonomy( $key_category1_for_cpt, array( $key_cpt ), $args );
+		register_taxonomy( $tax_klassifikation, array( $key_cpt ), $args );
 
 		// Landkreise
-		$text_domain = $key_category2_for_cpt;
-		$labels      = array(
+		$labels = array(
 			'name'                       => _x( 'Kreise', 'Taxonomy General Name', $text_domain ),
 			'singular_name'              => _x( 'Kreis', 'Taxonomy Singular Name', $text_domain ),
 			'menu_name'                  => __( 'Kreis', 'text_domain' ),
@@ -225,7 +227,7 @@ class Demenznav_Sh_Admin {
 			'items_list'                 => __( 'Items list', $text_domain ),
 			'items_list_navigation'      => __( 'Items list navigation', $text_domain ),
 		);
-		$args        = array(
+		$args   = array(
 			'labels'            => $labels,
 			'hierarchical'      => true,
 			'public'            => true,
@@ -234,19 +236,31 @@ class Demenznav_Sh_Admin {
 			'show_in_nav_menus' => true,
 			'show_tagcloud'     => true,
 		);
-		register_taxonomy( $key_category2_for_cpt, array( $key_cpt ), $args );
+		register_taxonomy( $tax_kreis, array( $key_cpt ), $args );
 
 	}
 
 
-	function register_einrichtung_admin() {
+	/**
+	 * Workflow for Einrichtung Administration and syncing
+	 */
+	function admin_einrichtung() {
 		// Dieser Hook ist steuert die Methode, die die eigene Admin Seite aufbaut:
-		add_submenu_page( 'edit.php?post_type=einrichtung', 'GeoData Sync', 'Admin', 'administrator', 'einrichtung_admin_page', array( $this, 'einrichtung_admin_page' ) );
+		add_submenu_page( 'edit.php?post_type=einrichtung', 'GeoData Sync', 'Admin', 'administrator', 'einrichtung_admin_page',
+			[
+				$this,
+				'einrichtung_admin_page'
+			]
+		);
 		// Dieser Hook steuert, welche Methode nach submit (action) aufgerufen wird:
-		add_action( 'admin_action_einrichtung_sync_latlang', array( $this, 'einrichtung_sync_latlang' ) );
+		add_action( 'admin_action_einrichtung_sync_latlang', [ $this, 'einrichtung_sync_latlang' ] );
+
+		// Sync LatLong Table with posts:
+		add_action( 'save_post', [ $this, 'sync_latlong_on_save' ] );
+		add_action( 'delete_post', [ $this, 'sync_latlong_on_delete' ] );
 	}
 
-	function einrichtung_sync_latlang() {
+	public function einrichtung_sync_latlang() {
 		// check if table exists:
 		global $post;
 		$args     = array(
@@ -258,7 +272,24 @@ class Demenznav_Sh_Admin {
 			$objQuery->the_post();
 			$this->save_latlng( $post );
 		}
-		echo('Done!');
+		echo( 'Done!' );
+	}
+
+
+	public function sync_latlong_on_save( $post_id ) {
+		$post = get_post( $post_id );
+		if ( ! is_admin() || $post->post_type != self::CPT_EINRICHTUNG ) {
+			return;
+		}
+		$this->save_latlng( $post );
+	}
+
+	// Delete Entry if
+	public function sync_latlong_on_delete( $post_id ) {
+		global $wpdb;
+		if ( $wpdb->get_var( $wpdb->prepare( 'SELECT post_id FROM wp_latlong WHERE post_id = %d', $post_id ) ) ) {
+			$wpdb->query( $wpdb->prepare( 'DELETE FROM wp_latlong WHERE post_id = %d', $post_id ) );
+		}
 	}
 
 	/**
@@ -279,7 +310,7 @@ class Demenznav_Sh_Admin {
 			return;
 		}
 		// Check if we have a lat/lng stored for this property already
-		$check_link = $wpdb->get_row( "SELECT * FROM $table WHERE post_id = '" . $post->ID . "'" );
+		$check_link = $wpdb->get_row( "SELECT * FROM wp_latlong WHERE post_id = '" . $post->ID . "'" );
 		// Update the row with possible new values:
 		if ( $check_link != null ) {
 			$wpdb->update(
@@ -309,6 +340,7 @@ class Demenznav_Sh_Admin {
 		}
 
 	}
+
 
 	function einrichtung_admin_page() {
 		?>

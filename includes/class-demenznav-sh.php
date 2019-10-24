@@ -162,7 +162,8 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
-		$this->loader->add_action( 'init', $plugin_admin, 'register_einrichtung_admin' );
+		$this->loader->add_action( 'init', $plugin_admin, 'admin_einrichtung' );
+
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
