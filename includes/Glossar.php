@@ -107,10 +107,11 @@ class Glossar {
 		register_taxonomy( $tax_klassifikation, [ $key_cpt ], $args );
 
 		// First Letter Taxonomie:
-		if ( ! taxonomy_exists( 'index' ) ) {
-			register_taxonomy( 'index', [ $key_cpt ], [
+		if ( ! taxonomy_exists( self::TAXONOMY_INDEX ) ) {
+			register_taxonomy( self::TAXONOMY_INDEX, [ $key_cpt ], [
 				'labels'  => [ 'name' => 'Index' ],
-				'show_ui' => true
+				'show_ui' => true,
+				'rewrite' => [ 'slug' => 'glossarindex' ]
 			] );
 		}
 		// Autosave Posts to index:
@@ -149,8 +150,8 @@ class Glossar {
 	public static function saveOldPosts() {
 		$taxonomy = self::TAXONOMY_INDEX;
 		$posts    = get_posts( [
-			'post_type' => self::CPT_GLOSSAR,
-			'numberposts' => - 1
+			'post_type'   => self::CPT_GLOSSAR,
+			'numberposts' => - 1,
 		] );
 		foreach ( $posts as $p ) {
 			wp_set_post_terms( $p->ID, strtolower( substr( $p->post_title, 0, 1 ) ), $taxonomy );
