@@ -165,7 +165,7 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
 		$this->loader->add_action( 'init', $plugin_admin, 'admin_einrichtung' );
-		$this->loader->add_action( 'init', '\mnc\Glossar', 'saveOldPosts' );
+		// $this->loader->add_action( 'init', '\mnc\Glossar', 'saveOldPosts' );
 
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
