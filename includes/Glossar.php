@@ -1,10 +1,12 @@
 <?php
+
 namespace mnc;
 
 class Glossar {
 
 	const CPT_GLOSSAR = 'glossar';
 	const TAXONOMY_GLOSSAR = 'glossargruppe';
+	const TAXONOMY_INDEX = 'index';
 
 	public static function registerCPT() {
 
@@ -12,7 +14,7 @@ class Glossar {
 		$tax_klassifikation = self::TAXONOMY_GLOSSAR;
 
 		$text_domain = $key_cpt;
-		$labels      = array(
+		$labels      = [
 			'name'                  => _x( 'Glossareintrag', 'Post Type General Name', $text_domain ),
 			'singular_name'         => _x( 'Glossareintrag', 'Post Type Singular Name', $text_domain ),
 			'menu_name'             => __( 'Glossar', $text_domain ),
@@ -40,19 +42,19 @@ class Glossar {
 			'items_list'            => __( 'Items list', $text_domain ),
 			'items_list_navigation' => __( 'Items list navigation', $text_domain ),
 			'filter_items_list'     => __( 'Filter items list', $text_domain ),
-		);
-		$rewrite     = array(
+		];
+		$rewrite     = [
 			'slug'       => 'demenzglossar',
 			'with_front' => true,
 			'pages'      => true,
 			'feeds'      => true,
-		);
-		$args        = array(
+		];
+		$args        = [
 			'label'               => __( $text_domain, $text_domain ),
 			'description'         => __( 'Glossar', $text_domain ),
 			'labels'              => $labels,
-			'supports'            => array( 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', ),
-			'taxonomies'          => array( $tax_klassifikation),
+			'supports'            => [ 'title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', ],
+			'taxonomies'          => [ $tax_klassifikation ],
 			'hierarchical'        => false,
 			'public'              => true,
 			'show_ui'             => true,
@@ -67,11 +69,11 @@ class Glossar {
 			'publicly_queryable'  => true,
 			'rewrite'             => $rewrite,
 			'capability_type'     => 'page',
-		);
+		];
 		register_post_type( $key_cpt, $args );
 
 		// Projektkategorie
-		$labels = array(
+		$labels = [
 			'name'                       => _x( 'Glossargruppe', 'Taxonomy General Name', $text_domain ),
 			'singular_name'              => _x( 'Glossargrupppe', 'Taxonomy Singular Name', $text_domain ),
 			'menu_name'                  => __( 'Glossargruppe', $text_domain ),
@@ -92,8 +94,8 @@ class Glossar {
 			'no_terms'                   => __( 'No items', $text_domain ),
 			'items_list'                 => __( 'Items list', $text_domain ),
 			'items_list_navigation'      => __( 'Items list navigation', $text_domain ),
-		);
-		$args   = array(
+		];
+		$args   = [
 			'labels'            => $labels,
 			'hierarchical'      => true,
 			'public'            => true,
@@ -101,9 +103,58 @@ class Glossar {
 			'show_admin_column' => true,
 			'show_in_nav_menus' => true,
 			'show_tagcloud'     => true,
-		);
-		register_taxonomy( $tax_klassifikation, array( $key_cpt ), $args );
+		];
+		register_taxonomy( $tax_klassifikation, [ $key_cpt ], $args );
 
+		// First Letter Taxonomie:
+		if ( ! taxonomy_exists( 'index' ) ) {
+			register_taxonomy( 'index', [ $key_cpt ], [
+				'labels'  => [ 'name' => 'Index' ],
+				'show_ui' => true
+			] );
+		}
+		// Autosave Posts to index:
+		add_action( 'save_post', function ( $post_id ) {
+			// verify if this is an auto save routine.
+			// If it is our form has not been submitted, so we dont want to do anything
+			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+				return;
+			}
+
+			//check location (only run for posts)
+			$limitPostTypes = [ self::CPT_GLOSSAR ];
+			if ( ! in_array( $_POST['post_type'], $limitPostTypes ) ) {
+				return;
+			}
+
+			// Check permissions
+			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+				return;
+			}
+
+			// OK, we're authenticated: we need to find and save the data
+			$taxonomy = self::TAXONOMY_INDEX;
+
+			//set term as first letter of post title, lower case
+			wp_set_post_terms( $post_id, strtolower( substr( $_POST['post_title'], 0, 1 ) ), $taxonomy );
+
+			//delete the transient that is storing the alphabet letters
+			delete_transient( 'glossar_index' );
+		} );
+	}
+
+	/**
+	 * let just run once!!!
+	 */
+	public static function saveOldPosts() {
+		$taxonomy = self::TAXONOMY_INDEX;
+		$posts    = get_posts( [
+			'post_type' => self::CPT_GLOSSAR,
+			'numberposts' => - 1
+		] );
+		foreach ( $posts as $p ) {
+			wp_set_post_terms( $p->ID, strtolower( substr( $p->post_title, 0, 1 ) ), $taxonomy );
+		}
 	}
 
 
