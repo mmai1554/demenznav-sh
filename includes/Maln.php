@@ -27,6 +27,22 @@ abstract class Maln {
 		return implode( "", $a );
 	}
 
+	public static function icon_li_material( $content, $icon ) {
+		$a   = [];
+		$a[] = '<li>';
+		$a[] = '<div class="icon-wrap">';
+		$a[] = '<span class="fl-icon">';
+		$a[] = '<i class="material-icons mnc-iconlist">'.$icon.'</i>';
+		$a[] = '</span>';
+		$a[] = '<div class="fl-icon-text">';
+		$a[] = $content;
+		$a[] = '</div>';
+		$a[] = '</div>';
+		$a[] = '</li>';
+
+		return implode( "", $a );
+	}
+
 
 	/**
 	 * @param $html
