@@ -4,34 +4,36 @@ namespace mnc;
 
 class Presenter {
 
-	public static function init()
-	{
-		new self;
+	/**
+	 * @return Presenter
+	 */
+	public static function init() {
+		return new self;
 	}
 
-	function __construct() {
-		add_action( 'format_website', array ( $this, 'website' ), 10, 1 );
+	public function __construct() {
+
+	}
+
+	public function __call( $name, $arguments ) {
+		return get_field( $name, $arguments[0] );
 	}
 
 	/**
-	 * returns a formatted website link
-	 * use only on website fields
-	 * true: echos the formatted value
-	 * false: returns the formatted value as string
+	 * builds the complete address field from the given fields
 	 *
-	 * @param $fieldname
+	 * @param $post_id
 	 *
 	 * @return string
 	 */
-	function website( $fieldname ) {
-		$url = get_field( $fieldname, false, false );
-		if ( ! $url ) {
-			return '';
-		}
+	function adresse( $post_id ) {
+		$str = get_field( 'strasse', $post_id );
+		$a   = [];
+		$a[] = $str;
+		$a[] = get_field( 'plz', $post_id ) . '&nbsp;' . get_field( 'ort', $post_id );
+		$a[] = get_field( 'adresse_zusatz', $post_id );
 
-		return sprintf( '<a href="%s" target="_blank" title="Website %s in neuem Fenster öffnen...">%s</a>',
-			$url, $url, $url
-		);
+		return implode( '<br>', $a );
 	}
 
 

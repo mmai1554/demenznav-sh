@@ -126,7 +126,7 @@ class Demenznav_Sh {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-demenznav-sh-public.php';
-		// require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Presenter.php';
+		 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Presenter.php';
 
 
 		$this->loader = new Demenznav_Sh_Loader();

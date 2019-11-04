@@ -1,4 +1,5 @@
 <?php
+
 namespace mnc;
 
 class Einrichtung {
@@ -139,6 +140,89 @@ class Einrichtung {
 			'show_tagcloud'     => true,
 		);
 		register_taxonomy( $tax_kreis, array( $key_cpt ), $args );
+
+		self::modifyAdminColumns();
+
+	}
+
+	public static function modifyAdminColumns() {
+		// Add Projektnummer to Column:
+
+		add_filter( 'manage_' . self::CPT_EINRICHTUNG . '_posts_columns', function ( $columns ) {
+			return
+				[
+					'cb'                                        => '<input type="checkbox" />',
+					'title'                                     => __( 'Titel' ),
+					'plz'                                       => __( 'PLZ' ),
+					'address'                                   => __( 'Adresse' ),
+					'location'                                  => __( 'GeoLoc' ),
+					'taxonomy-' . self::TAXONOMY_KLASSIFIKATION => __( 'Klassifikation' ),
+					'taxonomy-' . self::TAXONOMY_KREIS          => __( 'Kreis' ),
+				];
+		} );
+
+		add_filter( 'manage_' . self::CPT_EINRICHTUNG . '_posts_custom_column', function ( $column, $post_id ) {
+			switch ( $column ) {
+				case 'address':
+					$adresse = Presenter::init()->adresse( $post_id );
+					echo( $adresse );
+					break;
+				case 'plz':
+					$plz = Presenter::init()->plz( $post_id );
+					echo( $plz );
+					break;
+//				case 'synced':
+//					/** @var \wpdb $wpdb */
+//					global $wpdb;
+//					$sql = "SELECT * FROM wp_latlong WHERE post_id='$post_id' LIMIT 1";
+//					$row = $wpdb->get_row( $sql );
+//					if ( null !== $row ) {
+//						echo( $row->lat . '/' . $row->lng );
+//					} else {
+//						echo( '- not synced -' );
+//					}
+//					break;
+				case 'location':
+					$a = get_field( 'standort', $post_id, true );
+					if ( isset( $a['lng'] ) ) {
+						$s = $a['lat'] . ' / ' . $a['lng'];
+						echo( $s );
+					}
+					global $wpdb;
+					$sql = "SELECT * FROM wp_latlong WHERE post_id='$post_id' LIMIT 1";
+					$row = $wpdb->get_row( $sql );
+					if ( null !== $row ) {
+						echo( '<div>synced data:' . $row->lat . '/' . $row->lng . '</div>' );
+					} else {
+						echo( '<span style="color:#ca4a1f;">[not synced with wp_latlng] please save or use admin > sync</span>' );
+					}
+					break;
+					break;
+			}
+		}, 10, 3 );
+
+		// Make it sortable:
+		// 1st: Column Title clickable:
+		add_filter( 'manage_edit-' . self::CPT_EINRICHTUNG . '_sortable_columns', function ( $columns ) {
+			$columns['plz'] = 'plz';
+
+			return $columns;
+		} );
+		// 2nd: Hook into posts query (use it for searching too:)
+		add_action( 'pre_get_posts', function ( $query ) {
+			$screen    = get_current_screen();
+			$post_type = $post_type = $query->get( 'post_type' );
+			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
+				return;
+			}
+			$orderby = $query->get( 'orderby' );
+			if ( 'plz' == $orderby ) {
+				$query->set( 'meta_key', 'plz' );
+				$query->set( 'orderby', 'meta_value_num' );
+			}
+			$s = $query->get( 's' );
+
+		} );
 
 	}
 
