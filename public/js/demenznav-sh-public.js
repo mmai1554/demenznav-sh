@@ -69,6 +69,16 @@
         return map;
     }
 
+    function add_my_location(map) {
+        let marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            label: divmarker.attr('data-label'),
+        });
+        // add to array
+        map.markers.push(marker);
+    }
+
     function add_marker(divmarker, map) {
 
         // var
