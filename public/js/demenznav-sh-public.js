@@ -63,17 +63,32 @@
         divmarkers.each(function () {
             add_marker($(this), map);
         });
+        add_my_location(map);
         // center map
         center_map(map);
         // return
         return map;
     }
 
+    /**
+     * use customized marker to display own location on the map
+     * @param map
+     */
     function add_my_location(map) {
+        let mypos = $('#MyPosition');
+        let iconURL = '/wp-content/themes/demenznav-theme/assets/my_location.png';
+        let image = {
+            url: '/wp-content/themes/demenznav-theme/assets/my_location.png',
+            scaledSize: new google.maps.Size(32, 32), // scaled size
+            origin: new google.maps.Point(0,0), // origin
+            anchor: new google.maps.Point(0, 0)
+        };
+        let latlng = new google.maps.LatLng(mypos.attr('data-my-lat'), mypos.attr('data-my-lng'));
         let marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            label: divmarker.attr('data-label'),
+            icon:image
+            // label: mypos.attr('data-label'),
         });
         // add to array
         map.markers.push(marker);
@@ -87,7 +102,7 @@
         let marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            label: divmarker.attr('data-label'),
+            // label: divmarker.attr('data-label'),
         });
         // add to array
         map.markers.push(marker);
