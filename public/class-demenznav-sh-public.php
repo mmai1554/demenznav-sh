@@ -22,7 +22,6 @@ use mnc\Umkreissuche;
  * @subpackage Demenznav_Sh/public
  * @author     ReBoom GmbH <m.mai@reboom.de>
  */
-
 class Demenznav_Sh_Public {
 
 	/**
@@ -60,12 +59,14 @@ class Demenznav_Sh_Public {
 
 	/**
 	 * hook method for inlcude own params in WP Query vars
+	 *
 	 * @param $vars
 	 *
 	 * @return array
 	 */
 	public function register_query_vars( $vars ) {
-		$vars = Umkreissuche::appendQueryVars($vars);
+		$vars = Umkreissuche::appendQueryVars( $vars );
+
 		return $vars;
 	}
 
@@ -86,8 +87,10 @@ class Demenznav_Sh_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
+		wp_enqueue_script( 'google-maps', 'https://maps.googleapis.com/maps/api/js?key='.MI_GOOGLE_MAPS_API_KEY );
+		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', [ 'jquery' ], $this->version, true );
+		// wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/gmaps.js', [ 'jquery' ], $this->version, true );
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/demenznav-sh-public.js', array( 'jquery' ), $this->version, true );
 		wp_localize_script( $this->plugin_name, 'umkreissuche', [ 'ajaxurl' => admin_url( 'admin-ajax.php' ) ] );
 
 	}
@@ -193,10 +196,6 @@ class Demenznav_Sh_Public {
 			return $var;
 		} );
 	}
-
-
-
-
 
 
 }

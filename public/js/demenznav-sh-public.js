@@ -1,47 +1,3 @@
-;(function (a) {
-    a.fn.rwdImageMaps = function () {
-        var c = this;
-        var b = function () {
-            c.each(function () {
-                if (typeof (a(this).attr("usemap")) == "undefined") {
-                    return
-                }
-                var e = this, d = a(e);
-                a("<img />").on('load', function () {
-                    var g = "width", m = "height", n = d.attr(g), j = d.attr(m);
-                    if (!n || !j) {
-                        var o = new Image();
-                        o.src = d.attr("src");
-                        if (!n) {
-                            n = o.width
-                        }
-                        if (!j) {
-                            j = o.height
-                        }
-                    }
-                    var f = d.width() / 100, k = d.height() / 100, i = d.attr("usemap").replace("#", ""), l = "coords";
-                    a('map[name="' + i + '"]').find("area").each(function () {
-                        var r = a(this);
-                        if (!r.data(l)) {
-                            r.data(l, r.attr(l))
-                        }
-                        var q = r.data(l).split(","), p = new Array(q.length);
-                        for (var h = 0; h < p.length; ++h) {
-                            if (h % 2 === 0) {
-                                p[h] = parseInt(((q[h] / n) * 100) * f)
-                            } else {
-                                p[h] = parseInt(((q[h] / j) * 100) * k)
-                            }
-                        }
-                        r.attr(l, p.toString())
-                    })
-                }).attr("src", d.attr("src"))
-            })
-        };
-        a(window).resize(b).trigger("resize");
-        return this
-    }
-})(jQuery);
 (function ($) {
     'use strict';
 
@@ -88,20 +44,79 @@
                 }
             })
         });
+        //
+        //
+        new_map($('#gmapresults'));
     });
 
+    function new_map(element) {
+        // var
+        let divmarkers = $('.mnc-results').find('[data-lat]');
+        let map = new google.maps.Map(element[0], {
+            zoom: 9,
+            center: new google.maps.LatLng(54.1792679,9.3400332),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
+        // add a markers reference
+        map.markers = [];
+        // // add markers
+        divmarkers.each(function () {
+            add_marker($(this), map);
+        });
+        // center map
+        center_map(map);
+        // return
+        return map;
+    }
 
+    function add_marker(divmarker, map) {
 
+        // var
+        let latlng = new google.maps.LatLng(divmarker.attr('data-lat'), divmarker.attr('data-lng'));
+        // create marker
+        let marker = new google.maps.Marker({
+            position: latlng,
+            map: map,
+            label: divmarker.attr('data-label'),
+        });
+        // add to array
+        map.markers.push(marker);
 
+        // if marker contains HTML, add it to an infoWindow
+        if (divmarker.html()) {
+            // create info window
+            let infowindow = new google.maps.InfoWindow({
+                content: divmarker.html()
+            });
+
+            // show info window when marker is clicked
+            google.maps.event.addListener(marker, 'click', function () {
+                infowindow.open(map, marker);
+            });
+        }
+
+    }
+
+    function center_map(map) {
+
+        // vars
+        let bounds = new google.maps.LatLngBounds();
+
+        // loop through all markers and create bounds
+        $.each(map.markers, function (i, marker) {
+            let latlng = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+            bounds.extend(latlng);
+        });
+        // only 1 marker?
+        if (map.markers.length === 1) {
+            // set center of map
+            map.setCenter(bounds.getCenter());
+            map.setZoom(16);
+        }
+        else {
+            map.fitBounds(bounds);
+        }
+
+    }
 
 })(jQuery);
-
-function mapHighlight(key) {
-    document.getElementById('shmap').classList.add(key);
-    document.getElementById('legende_' + key).classList.add('highlight');
-}
-
-function mapReset(key) {
-    document.getElementById('shmap').classList.remove(key);
-    document.getElementById('legende_' + key).classList.remove('highlight');
-}

@@ -126,7 +126,7 @@ class Demenznav_Sh {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-demenznav-sh-public.php';
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/EinrichtungPresenter.php';
+		// require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Presenter.php';
 
 
 		$this->loader = new Demenznav_Sh_Loader();
@@ -160,7 +160,6 @@ class Demenznav_Sh {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Demenznav_Sh_Admin( $this->get_plugin_name(), $this->get_version() );
-
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
@@ -180,18 +179,17 @@ class Demenznav_Sh {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Demenznav_Sh_Public( $this->get_plugin_name(), $this->get_version() );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
-		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
-		$this->loader->add_action( 'init', $plugin_public, 'register_presenter' );
-		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		$this->loader->add_action( 'init', $plugin_public, 'register_global_variables' );
-		$this->loader->add_action( 'wp_ajax_nopriv_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
-		$this->loader->add_action( 'wp_ajax_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
-		$this->loader->add_filter( 'query_vars', $plugin_public, 'register_query_vars' );
-
-		// $this->loader->add_filter( 'posts_join', $plugin_public, 'add_join_geocode' );
-
+		if(!is_admin()) {
+			$plugin_public = new Demenznav_Sh_Public( $this->get_plugin_name(), $this->get_version() );
+			$this->loader->add_action( 'wp_enqueue_styles', $plugin_public, 'enqueue_styles' );
+			$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
+			$this->loader->add_action( 'init', $plugin_public, 'register_presenter' );
+			$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
+			$this->loader->add_action( 'init', $plugin_public, 'register_global_variables' );
+			$this->loader->add_action( 'wp_ajax_nopriv_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
+			$this->loader->add_action( 'wp_ajax_ajax_umkreissuche', $plugin_public, 'ajax_umkreissuche' );
+			$this->loader->add_filter( 'query_vars', $plugin_public, 'register_query_vars' );
+		}
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}

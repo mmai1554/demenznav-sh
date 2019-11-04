@@ -1,7 +1,8 @@
 <?php
 
+namespace mnc;
 
-class EinrichtungPresenter {
+class Presenter {
 
 	public static function init()
 	{
