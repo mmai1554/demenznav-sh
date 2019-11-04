@@ -327,6 +327,13 @@ class Umkreissuche {
 		return acos( $dist ) / $rad * 60 * 1.853;
 	}
 
+	/**
+	 * @return GeoData|null
+	 */
+	public function getGeoData() {
+		return $this->objGeoData;
+	}
+
 
 	/**
 	 * only needed when the post is loaded as single instance
