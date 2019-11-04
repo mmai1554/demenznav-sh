@@ -31,7 +31,7 @@ abstract class Maln {
 		$a[] = '<li>';
 		$a[] = '<div class="icon-wrap">';
 		$a[] = '<span class="fl-icon">';
-		$a[] = '<i class="material-icons mnc-iconlist">' . $icon . '</i>';
+		$a[] = self::icon_material( $icon, 'mnc-iconlist' );
 		$a[] = '</span>';
 		$a[] = '<div class="fl-icon-text">';
 		$a[] = $content;
@@ -40,6 +40,18 @@ abstract class Maln {
 		$a[] = '</li>';
 
 		return implode( "", $a );
+	}
+
+	/**
+	 * @param string $icon the name of the material icon
+	 * @param string $class another class
+	 *
+	 * @return string
+	 */
+	public static function icon_material( $icon, $class ) {
+		$class = self::getClass( trim( $class . ' ' . 'material-icons' ) );
+
+		return sprintf( '<i%s>%s</i>', $class, $icon );
 	}
 
 
@@ -75,9 +87,9 @@ abstract class Maln {
 	 *
 	 * @return string
 	 */
-	public static function alink( $url, $html, $target, $title, $class = '', $style = '', $id = '', $dataattributes = [] ) {
+	public static function alink( $url, $html, $target, $title, $class = '', $style = '', $id = '', $dataattributes = false, $role = '' ) {
 		return sprintf(
-			'<a href="%s"%s%s%s%s%s%s>%s</a>',
+			'<a href="%s"%s%s%s%s%s%s%s>%s</a>',
 			$url,
 			self::id( $id ),
 			self::target( $target ),
@@ -85,6 +97,7 @@ abstract class Maln {
 			self::getClass( $class ),
 			self::style( $style ),
 			self::getDataAttribute( $dataattributes ),
+			self::role( $role ),
 			$html
 		);
 	}
@@ -182,11 +195,18 @@ abstract class Maln {
 		return strlen( $title ) ? ' title="' . $title . '"' : '';
 	}
 
+	private static function role( $role = '' ) {
+		return strlen( $role ) ? ' role="' . $role . '"' : '';
+	}
+
 	private static function getClass( $class = '' ) {
 		return strlen( $class ) ? ' class="' . $class . '"' : '';
 	}
 
 	private static function getDataAttribute( $arrData = [] ) {
+		if ( ! is_array( $arrData ) ) {
+			return '';
+		}
 		$arrMap = [];
 		if ( count( $arrData ) == 0 ) {
 			return '';
