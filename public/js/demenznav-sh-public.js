@@ -92,6 +92,17 @@
         });
         // add to array
         map.markers.push(marker);
+        if (mypos.html()) {
+            // create info window
+            let infowindow = new google.maps.InfoWindow({
+                content: mypos.html()
+            });
+
+            // show info window when marker is clicked
+            google.maps.event.addListener(marker, 'click', function () {
+                infowindow.open(map, marker);
+            });
+        }
     }
 
     function add_marker(divmarker, map) {
@@ -102,7 +113,7 @@
         let marker = new google.maps.Marker({
             position: latlng,
             map: map,
-            // label: divmarker.attr('data-label'),
+            label: divmarker.attr('data-label'),
         });
         // add to array
         map.markers.push(marker);
