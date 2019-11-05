@@ -209,20 +209,23 @@ class Einrichtung {
 			return $columns;
 		} );
 		// 2nd: Hook into posts query (use it for searching too:)
-		add_action( 'pre_get_posts', function ( $query ) {
-			$screen    = get_current_screen();
-			$post_type = $post_type = $query->get( 'post_type' );
-			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
-				return;
-			}
-			$orderby = $query->get( 'orderby' );
-			if ( 'plz' == $orderby ) {
-				$query->set( 'meta_key', 'plz' );
-				$query->set( 'orderby', 'meta_value_num' );
-			}
-			$s = $query->get( 's' );
-
-		} );
+//		add_action( 'pre_get_posts', function ( $query ) {
+//			if ( ! is_admin() ) {
+//				return '';
+//			}
+//			$screen    = get_current_screen();
+//			$post_type = $post_type = $query->get( 'post_type' );
+//			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
+//				return;
+//			}
+//			$orderby = $query->get( 'orderby' );
+//			if ( 'plz' == $orderby ) {
+//				$query->set( 'meta_key', 'plz' );
+//				$query->set( 'orderby', 'meta_value_num' );
+//			}
+//			$s = $query->get( 's' );
+//
+//		} );
 
 	}
 
