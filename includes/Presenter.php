@@ -36,5 +36,38 @@ class Presenter {
 		return implode( '<br>', $a );
 	}
 
+	function plzort( $post_id ) {
+		return get_field( 'plz', $post_id ) . '&nbsp;' . get_field( 'ort', $post_id );
+	}
+
+	/**
+	 * @param $index
+	 *
+	 * @return mixed|string
+	 */
+	function getLetterByIndex( $index ) {
+		$abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		if ( $index < 0 ) {
+			return 'A';
+		}
+		if ( $index > 26 ) {
+			return 'Z';
+		}
+
+		return $abc[ $index ];
+	}
+
+	function getNextLetter( $letter ) {
+		$abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		if ( $letter == '' ) {
+			return 'A';
+		}
+		if ( strpos( $abc, $letter ) >= 0 && strpos( $abc, $letter ) <= strlen( $abc ) ) {
+			return $abc[ strpos( $abc, $letter ) + 1 ];
+		} else {
+			return 'A';
+		}
+	}
+
 
 }
