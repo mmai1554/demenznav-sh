@@ -177,12 +177,16 @@
         // add a markers reference
         map.markers = [];
         // // add markers
+        let sem = false;
         divmarkers.each(function () {
+            sem = true;
             add_marker($(this), map);
         });
-        add_my_location(map);
+        if(sem) {
+            add_my_location(map);
+            center_map(map);
+        }
         // center map
-        center_map(map);
         // return
         return map;
     }
@@ -193,6 +197,9 @@
      */
     function add_my_location(map) {
         let mypos = $('#MyPosition');
+        if(!mypos.length) {
+            return;
+        }
         let iconURL = '/wp-content/themes/demenznav-theme/assets/my_location.png';
         let image = {
             url: '/wp-content/themes/demenznav-theme/assets/my_location.png',
