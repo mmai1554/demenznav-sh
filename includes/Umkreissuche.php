@@ -154,14 +154,14 @@ class Umkreissuche {
 
 	public function getWPQuery() {
 		global $wp_query;
-		$posts_per_page = get_option('posts_per_page', 10);
-		$paged = get_query_var('paged') ? get_query_var('paged') : 1;
-		$offset = ($paged - 1) * $posts_per_page;
-		$args = array(
+		$posts_per_page = get_option( 'posts_per_page', 10 );
+		$paged          = get_query_var( 'paged' ) ? get_query_var( 'paged' ) : 1;
+		$offset         = ( $paged - 1 ) * $posts_per_page;
+		$args           = array(
 			'post_type'      => 'einrichtung',
 			'posts_per_page' => $posts_per_page,
-			'paged' => $paged,
-			'offset' => $offset,
+			'paged'          => $paged,
+			'offset'         => $offset,
 			'tax_query'      => [
 				[
 					'taxonomy' => 'klassifikation',
@@ -181,6 +181,16 @@ class Umkreissuche {
 		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
 		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		// return $wp_query;
+	}
+
+	public function addLatLngToQuery( \WP_Query $wp_query ) {
+		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
+		add_filter( 'posts_fields', [ $this, 'add_fields_latlng' ], 10, 2 );
+	}
+
+	public function removeLatLngToQuery( \WP_Query $wp_query ) {
+		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
+		remove_filter( 'posts_fields', [ $this, 'add_fields_latlng' ] );
 	}
 
 	public function query_distinct() {
@@ -226,7 +236,7 @@ class Umkreissuche {
 	 *
 	 * @return string
 	 */
-	function add_join_geocode( $join ) {
+	public function add_join_geocode( $join ) {
 		global $wp_query, $wpdb;
 		// if (!empty($wp_query->query_vars[\mnc\Umkreissuche::QUERY_VAR_PLZ])) {
 		$join .= "LEFT JOIN wp_latlong ON ($wpdb->posts.ID = wp_latlong.post_id)";
@@ -243,7 +253,7 @@ class Umkreissuche {
 	 *
 	 * @return string
 	 */
-	function add_fields_geocode( $fields, $wp_query ) {
+	public function add_fields_geocode( $fields, $wp_query ) {
 		global $wpdb;
 
 		$lat = $this->objGeoData->getLat();
@@ -255,6 +265,23 @@ class Umkreissuche {
 		$great_circle_distance = "ACOS(SIN(RADIANS(wp_latlong.lat))*SIN(RADIANS($lat)) + COS(RADIANS(wp_latlong.lat))*COS(RADIANS($lat))*COS(RADIANS((wp_latlong.lng-$lng))))";
 
 		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude, $great_circle_distance as distance";
+
+		return $fields;
+	}
+
+	/**
+	 * add only lat and lng fields to select
+	 * (in case we dont have a distance)
+	 *
+	 * @param $fields
+	 * @param $wp_query
+	 *
+	 * @return string
+	 */
+	public function add_fields_latlng( $fields, $wp_query ) {
+		global $wpdb;
+
+		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude";
 
 		return $fields;
 	}
@@ -334,6 +361,14 @@ class Umkreissuche {
 		return $this->objGeoData;
 	}
 
+	/**
+	 * checks if distance calculation is set
+	 * @return bool
+	 */
+	public function hasDistance() {
+		return $this->objGeoData !== null;
+	}
+
 
 	/**
 	 * only needed when the post is loaded as single instance
@@ -351,6 +386,5 @@ class Umkreissuche {
 
 		return self::getDistance( $lat_from, $lng_from, $lat_to, $lng_to );
 	}
-
 
 }
