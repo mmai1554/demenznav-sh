@@ -10,6 +10,8 @@
  * @subpackage Demenznav_Sh/admin
  */
 
+use Aws\Signature\SignatureV4;
+use GuzzleHttp\Psr7\Request;
 use mnc\Einrichtung;
 use mnc\Glossar;
 
@@ -224,6 +226,32 @@ class Demenznav_Sh_Admin {
         </div>
         <br>
 		<?php
+	}
+
+	public function init_elasticsearch_aws_service() {
+		add_filter( 'http_request_args', function ( array $args, string $url ): array {
+		    $url = str_replace('http://', 'https://', $url);
+			// $host = parse_url( $url, PHP_URL_HOST );
+
+//			if ( EP_HOST !== $host ) {
+//				return $args;
+//			}
+			$request = new Request( $args['method'], $url, $args['headers'], $args['body'] );
+			$signer  = new SignatureV4( 'es', 'eu-central-1' ); // replace with your region.
+			if ( defined( 'ELASTICSEARCH_AWS_KEY' ) ) {
+				$credentials = new Aws\Credentials\Credentials( ELASTICSEARCH_AWS_KEY, ELASTICSEARCH_AWS_SECRET );
+			} else {
+				$credentials = new Aws\Credentials\InstanceProfileProvider();
+			}
+
+			$signed_request                   = $signer->signRequest( $request, $credentials );
+			$args['headers']['Authorization'] = $signed_request->getHeader( 'Authorization' )[0];
+			$args['headers']['X-Amz-Date']    = $signed_request->getHeader( 'X-Amz-Date' )[0];
+
+			return $args;
+		}, 10, 2 );
+
+
 	}
 
 

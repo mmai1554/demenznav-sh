@@ -1,5 +1,9 @@
 <?php
 
+//use GuzzleHttp\Psr7\Request;
+//use Aws\Signature\SignatureV4;
+//use Aws\Credentials;
+
 /**
  * The file that defines the core plugin class
  *
@@ -100,6 +104,8 @@ class Demenznav_Sh {
 	 */
 	private function load_dependencies() {
 
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'vendor/autoload.php';
+
 		/**
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
@@ -110,6 +116,8 @@ class Demenznav_Sh {
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
+
+
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-demenznav-sh-i18n.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Maln.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/GeoData.php';
@@ -126,7 +134,7 @@ class Demenznav_Sh {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-demenznav-sh-public.php';
-		 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Presenter.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Presenter.php';
 
 
 		$this->loader = new Demenznav_Sh_Loader();
@@ -164,11 +172,13 @@ class Demenznav_Sh {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_custom_post_types' );
 		$this->loader->add_action( 'init', $plugin_admin, 'admin_einrichtung' );
+		// $this->loader->add_action( 'init', $plugin_admin, 'init_elasticsearch_aws_service' );
 		// $this->loader->add_action( 'init', '\mnc\Glossar', 'saveOldPosts' );
 
 		add_action( 'acf/init', array( $this, 'my_acf_init' ) );
 
 	}
+
 
 	/**
 	 * Register all of the hooks related to the public-facing functionality
@@ -179,7 +189,7 @@ class Demenznav_Sh {
 	 */
 	private function define_public_hooks() {
 
-		if(!is_admin()) {
+		if ( ! is_admin() ) {
 			$plugin_public = new Demenznav_Sh_Public( $this->get_plugin_name(), $this->get_version() );
 			$this->loader->add_action( 'wp_enqueue_styles', $plugin_public, 'enqueue_styles' );
 			$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
