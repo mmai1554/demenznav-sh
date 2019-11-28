@@ -1,0 +1,13 @@
+{
+    "name": "mmai/wordpress",
+    "authors": [
+        {
+            "name": "Michael Mai",
+            "email": "mm@mai-internet.de"
+        }
+    ],
+    "require": {
+      "aws/aws-sdk-php": "^3.117",
+      "guzzlehttp/psr7": "^1.6"
+    }
+}
