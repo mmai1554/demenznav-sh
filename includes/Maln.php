@@ -26,9 +26,10 @@ abstract class Maln {
 		return implode( "", $a );
 	}
 
-	public static function icon_li_material( $content, $icon ) {
+	public static function icon_li_material( $content, $icon , $add_class = '') {
+		$add_class = self::getClass($add_class);
 		$a   = [];
-		$a[] = '<li>';
+		$a[] = '<li '.$add_class.'>';
 		$a[] = '<div class="icon-wrap">';
 		$a[] = '<span class="fl-icon">';
 		$a[] = self::icon_material( $icon, 'mnc-iconlist' );
