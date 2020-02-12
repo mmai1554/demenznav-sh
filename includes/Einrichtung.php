@@ -2,6 +2,7 @@
 
 namespace mnc;
 
+
 class Einrichtung {
 
 	const CPT_EINRICHTUNG = 'einrichtung';
@@ -215,7 +216,10 @@ class Einrichtung {
 			if ( ! is_admin() ) {
 				return '';
 			}
-			$screen    = get_current_screen();
+			if(!function_exists('\get_current_screen')) {
+				require_once(ABSPATH . 'wp-admin/includes/screen.php');
+			}
+			$screen    = \get_current_screen();
 			$post_type = $post_type = $query->get( 'post_type' );
 			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
 				return;
