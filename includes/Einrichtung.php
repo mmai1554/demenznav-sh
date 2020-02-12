@@ -204,28 +204,42 @@ class Einrichtung {
 		// Make it sortable:
 		// 1st: Column Title clickable:
 		add_filter( 'manage_edit-' . self::CPT_EINRICHTUNG . '_sortable_columns', function ( $columns ) {
-			$columns['plz'] = 'plz';
+			$columns['plz']      = 'plz';
+			$columns['address']  = 'address';
+			$columns['location'] = 'standort';
 
 			return $columns;
 		} );
 		// 2nd: Hook into posts query (use it for searching too:)
-//		add_action( 'pre_get_posts', function ( $query ) {
-//			if ( ! is_admin() ) {
-//				return '';
-//			}
-//			$screen    = get_current_screen();
-//			$post_type = $post_type = $query->get( 'post_type' );
-//			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
-//				return;
-//			}
-//			$orderby = $query->get( 'orderby' );
-//			if ( 'plz' == $orderby ) {
-//				$query->set( 'meta_key', 'plz' );
-//				$query->set( 'orderby', 'meta_value_num' );
-//			}
+		add_action( 'pre_get_posts', function ( \WP_Query $query ) {
+			if ( ! is_admin() ) {
+				return '';
+			}
+			$screen    = get_current_screen();
+			$post_type = $post_type = $query->get( 'post_type' );
+			if ( ! is_admin() || ( isset( $screen->post_type ) && self::CPT_EINRICHTUNG != $screen->post_type ) || self::CPT_EINRICHTUNG != $post_type ) {
+				return;
+			}
+			$orderby = $query->get( 'orderby' );
+			if ( 'standort' == $orderby ) {
+				$meta_query = array(
+					array(
+						'key'     => 'standort',
+						'value'   => '',
+						'compare' => '=',
+					),
+				);
+				$query->set( 'meta_query', $meta_query );
+				$query->set( 'meta_key', 'standort' );
+				$query->set( 'orderby', 'meta_value' );
+				$query->set( 'order', 'DESC' );
+				// $query->set( 'order', 'ASC' );
+			}
 //			$s = $query->get( 's' );
 //
-//		} );
+//			return $s;
+
+		} );
 
 	}
 
