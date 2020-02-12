@@ -172,12 +172,14 @@ class Umkreissuche {
 		add_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		add_filter( 'posts_fields', [ $this, 'add_fields_geocode' ], 10, 2 );
+		add_filter( 'posts_where', [ $this, 'filter_valid_distance' ], 10, 2 );
 		add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
 		add_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		$wp_query = new \WP_Query( $args );
 		remove_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		remove_filter( 'posts_fields', [ $this, 'add_fields_geocode' ] );
+		remove_filter( 'posts_where', [ $this, 'filter_valid_distance' ] );
 		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
 		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		// return $wp_query;
@@ -195,6 +197,23 @@ class Umkreissuche {
 
 	public function query_distinct() {
 		return 'DISTINCT';
+	}
+
+	/**
+	 * only retrieve posts with a distance.
+	 *
+	 * Add a WP Filter Query (use in retrieving the posts with add_filter( 'posts_where' , ... );
+	 *
+	 * @param $where
+	 *
+	 * @return string
+	 */
+	public function filter_valid_distance( $where ) {
+		global $wpdb;
+		// Specify the co-ordinates that will form
+		// the centre of our search
+		$where .= " AND wp_latlong.lat IS NOT NULL ";
+		return $where;
 	}
 
 
@@ -228,6 +247,8 @@ class Umkreissuche {
 
 		return $where;
 	}
+
+
 
 	/**
 	 * join the geocode table if a search is in progress
