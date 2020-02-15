@@ -138,7 +138,7 @@ abstract class Maln {
 		}
 		$html[] = self::ul_close();
 
-		return self::atos( $arr );
+		return self::atos( $html );
 	}
 
 	/**
