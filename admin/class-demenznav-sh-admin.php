@@ -216,7 +216,9 @@ class Demenznav_Sh_Admin {
 	function einrichtung_admin_page() {
 		?>
         <div class="wrap">
-            <h3 class="wp-heading-inline">Admin Page for Einrichtungem (Nur für administrative Tätigkeiten!)</h3>
+            <h3 class="wp-heading-inline">Admin Page - Achtung!
+            Die folgenden Aktionen mit Vorsicht einsetzen...
+            </h3>
             <p>Lat / Lang mit externer Tabelle synchronisieren:</p>
             <form method="POST" action="<?php echo admin_url( 'admin.php' ); ?>">
                 <input type="hidden" name="action" value="einrichtung_sync_latlang"/>
