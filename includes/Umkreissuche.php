@@ -158,13 +158,13 @@ class Umkreissuche {
 		$paged          = get_query_var( 'paged' ) ? get_query_var( 'paged' ) : 1;
 		$offset         = ( $paged - 1 ) * $posts_per_page;
 		$args           = array(
-			'post_type'      => 'einrichtung',
+			'post_type'      => Einrichtung::CPT_EINRICHTUNG,
 			'posts_per_page' => $posts_per_page,
 			'paged'          => $paged,
 			'offset'         => $offset,
 			'tax_query'      => [
 				[
-					'taxonomy' => 'klassifikation',
+					'taxonomy' => Einrichtung::TAXONOMY_KLASSIFIKATION,
 					'terms'    => $this->objKlassifikation->term_id,
 				]
 			]
