@@ -135,6 +135,7 @@ class Demenznav_Sh_Public {
 	function register_shortcodes() {
 		$this->register_shortcode_mi_karte();
 		$this->register_shortcode_searchform();
+		$this->register_shortcode_form_filter_kreise();
 	}
 
 	protected function einrichtung_exists( $id ) {
@@ -182,10 +183,24 @@ class Demenznav_Sh_Public {
 
 	}
 
-
 	protected function register_shortcode_searchform() {
 		add_shortcode( 'mi_suchmaske', function () {
 			$file = get_stylesheet_directory() . '/templates/form_umkreissuche.php';
+			if ( ! file_exists( $file ) ) {
+				return '';
+			}
+			ob_start();
+			require $file;
+			$var = ob_get_contents();
+			ob_end_clean();
+
+			return $var;
+		} );
+	}
+
+	protected function register_shortcode_form_filter_kreise() {
+		add_shortcode( 'mi_filter_kreise', function () {
+			$file = get_stylesheet_directory() . '/templates/form_filter_kreise.php';
 			if ( ! file_exists( $file ) ) {
 				return '';
 			}
