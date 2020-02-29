@@ -122,6 +122,7 @@ class Demenznav_Sh {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Maln.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/GeoData.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Umkreissuche.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Filtersuche.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Einrichtung.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/Glossar.php';
 		/**
