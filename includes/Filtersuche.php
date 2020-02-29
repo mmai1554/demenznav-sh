@@ -46,6 +46,11 @@ class Filtersuche extends Umkreissuche {
 //	}
 
 
+	/**
+	 * @var \WP_Term | null
+	 */
+	protected $kreis = null;
+
 	public function validateInput() {
 
 
@@ -91,29 +96,62 @@ class Filtersuche extends Umkreissuche {
 			'posts_per_page' => $posts_per_page,
 			'paged'          => $paged,
 			'offset'         => $offset,
+			'orderby'        => [ 'title' => 'ASC' ],
+			'tax_query'      => [
+				[
+					'taxonomy' => Einrichtung::TAXONOMY_KREIS,
+					'terms'    => $this->kreis->term_id,
+				]
+			]
 		);
+		// Check if Filter Klassifikation is active:
 		if ( $this->doesKlassifikationExist() ) {
-			$args['tax_query'] = [
+//			$args['tax_query'] = [
+//				[
+//					'taxonomy' => Einrichtung::TAXONOMY_KLASSIFIKATION,
+//					'terms'    => $this->objKlassifikation->term_id,
+//				]
+//			];
+			$args['tax_query'][] =
 				[
 					'taxonomy' => Einrichtung::TAXONOMY_KLASSIFIKATION,
 					'terms'    => $this->objKlassifikation->term_id,
-				]
-			];
+				];
 		}
 		add_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		add_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		add_filter( 'posts_fields', [ $this, 'add_fields_geocode' ], 10, 2 );
 		add_filter( 'posts_where', [ $this, 'filter_valid_distance' ], 10, 2 );
-		add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
+		// add_filter( 'posts_orderby', [ $this, 'orderby_distance' ], 10, 2 );
 		add_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		$wp_query = new \WP_Query( $args );
 		remove_filter( 'posts_distinct', [ $this, 'query_distinct' ] );
 		remove_filter( 'posts_join', [ $this, 'add_join_geocode' ] );
 		remove_filter( 'posts_fields', [ $this, 'add_fields_geocode' ] );
 		remove_filter( 'posts_where', [ $this, 'filter_valid_distance' ] );
-		remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
+		// remove_filter( 'posts_orderby', [ $this, 'orderby_distance' ] );
 		remove_filter( 'posts_groupby', [ $this, 'groupby_no' ] );
 		// return $wp_query;
+	}
+
+	/**
+	 * Filtersuche (Kreis, Klassifikation hat keine Distanz, da keine Postleitzahl
+	 *
+	 * @param $fields
+	 * @param $wp_query
+	 *
+	 * @return string
+	 */
+	public function add_fields_geocode( $fields, $wp_query ) {
+		global $wpdb;
+		$fields = "{$wpdb->posts}.*, wp_latlong.lat as latitude, wp_latlong.lng as longitude";
+
+		return $fields;
+	}
+
+
+	public function setCurrentKreis( \WP_Term $kreis ) {
+		$this->kreis = $kreis;
 	}
 
 
