@@ -293,5 +293,27 @@ class Einrichtung {
 		return $arr;
 	}
 
+	public static function getTreeKlassifikation() {
+		$all = get_terms([
+			'taxonomy' => Einrichtung::TAXONOMY_KLASSIFIKATION,
+			'hide_empty' => false,
+			'parent' => 0
+		]);
+		return $all;
+		return self::sort_terms_hierarchicaly($all);
+	}
+
+	public static function sort_terms_hierarchicaly(Array $cats, $parentId = 0)
+	{
+		$into = [];
+		foreach ($cats as $i => $cat) {
+			if ($cat->parent == $parentId) {
+				$cat->children = self::sort_terms_hierarchicaly($cats, $cat->term_id);
+				$into[$cat->term_id] = $cat;
+			}
+		}
+		return $into;
+	}
+
 
 }
