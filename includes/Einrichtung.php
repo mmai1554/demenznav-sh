@@ -216,8 +216,8 @@ class Einrichtung {
 			if ( ! is_admin() ) {
 				return '';
 			}
-			if(!function_exists('\get_current_screen')) {
-				require_once(ABSPATH . 'wp-admin/includes/screen.php');
+			if ( ! function_exists( '\get_current_screen' ) ) {
+				require_once( ABSPATH . 'wp-admin/includes/screen.php' );
 			}
 			$screen    = \get_current_screen();
 			$post_type = $post_type = $query->get( 'post_type' );
@@ -245,6 +245,52 @@ class Einrichtung {
 
 		} );
 
+	}
+
+
+	public static function getBadgesForKreis( \WP_Post $post ) {
+			$terms_for_badges = get_the_terms( $post, 'klassifikation' );
+		if ( ! $terms_for_badges ) {
+			return false;
+		}
+		$arr = [];
+		foreach ( $terms_for_badges as $wp_term ) {
+			/**
+			 * @var \WP_Term $wp_term
+			 */
+			$name  = $wp_term->name;
+			$link  = add_query_arg( [
+				'mnc-einrichtung' => 'K' . $wp_term->term_id
+			] );
+			$arr[] = [ 'name' => $name, 'url' => $link ];
+		}
+
+		return $arr;
+	}
+
+	public static function getBadgesForKlassifikation( \WP_Post $post ) {
+		$terms_for_badges = get_the_terms( $post, 'kreis' );
+		if ( ! $terms_for_badges ) {
+			return false;
+		}
+		$arr = [];
+		// gets the current classification (e.g. Ambulante Pflege)
+		$current_klassifikation = get_queried_object();
+		if(!$current_klassifikation) {
+			return $arr;
+		}
+		foreach ( $terms_for_badges as $wp_term ) {
+			/**
+			 * @var \WP_Term $wp_term
+			 */
+			$name  = $wp_term->name;
+			$link  = add_query_arg( [
+				'mnc-einrichtung' => 'K' . $current_klassifikation->term_id
+			] , get_category_link($wp_term));
+			$arr[] = [ 'name' => $name, 'url' => $link ];
+		}
+
+		return $arr;
 	}
 
 
