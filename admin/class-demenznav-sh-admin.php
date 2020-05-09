@@ -117,12 +117,14 @@ class Demenznav_Sh_Admin {
 	 */
 	function admin_einrichtung() {
 		// Dieser Hook ist steuert die Methode, die die eigene Admin Seite aufbaut:
-		add_submenu_page( 'edit.php?post_type=einrichtung', 'GeoData Sync', 'Admin', 'administrator', 'einrichtung_admin_page',
-			[
-				$this,
-				'einrichtung_admin_page'
-			]
-		);
+		add_action('admin_menu', function() {
+            add_submenu_page( 'edit.php?post_type=einrichtung', 'GeoData Sync', 'Admin', 'administrator', 'einrichtung_admin_page',
+                [
+                    $this,
+                    'einrichtung_admin_page'
+                ]
+            );
+        });
 		// Dieser Hook steuert, welche Methode nach submit (action) aufgerufen wird:
 		add_action( 'admin_action_einrichtung_sync_latlang', [ $this, 'einrichtung_sync_latlang' ] );
 
